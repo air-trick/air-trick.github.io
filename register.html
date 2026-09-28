@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIR TRICK 会員登録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#182848; --ink-soft:#2b3b63;
+    --coral:#FF6A55; --coral-deep:#E5503C;
+    --teal:#2CB6AD; --marigold:#FFC24B;
+    --cloud:#FBFAF6; --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh;
+    background:
+      radial-gradient(120% 90% at 85% 0%, rgba(255,194,75,0.30), transparent 55%),
+      radial-gradient(120% 90% at 10% 100%, rgba(44,182,173,0.25), transparent 55%),
+      var(--cloud);
+    font-family:"Noto Sans JP", sans-serif;
+    color:var(--ink);
+    padding:32px 16px;
+  }
+  .card{
+    width:100%; max-width:480px; margin:0 auto;
+    background:var(--white);
+    border-radius:24px;
+    padding:36px 28px;
+    box-shadow:0 20px 40px rgba(24,40,72,0.12);
+  }
+  .brand{
+    font-family:"M PLUS Rounded 1c", sans-serif;
+    font-weight:900; font-size:1.5rem;
+    text-align:center; margin-bottom:4px;
+  }
+  .brand span{color:var(--coral-deep);}
+  h1{
+    font-family:"M PLUS Rounded 1c", sans-serif;
+    font-size:1.15rem; text-align:center;
+    margin:0 0 26px; color:var(--ink-soft); font-weight:700;
+  }
+  h2{
+    font-family:"M PLUS Rounded 1c", sans-serif;
+    font-size:1rem; margin:30px 0 4px; color:var(--ink);
+  }
+  .hint{font-size:0.8rem;color:var(--ink-soft);margin:0 0 14px;}
+  label{display:block;font-weight:700;font-size:0.88rem;margin:14px 0 6px;}
+  input{
+    width:100%; padding:12px 14px;
+    border-radius:12px; border:2px solid #E7E3D9;
+    font-size:1rem; font-family:inherit;
+  }
+  input:focus{outline:none;border-color:var(--teal);}
+  .member-row{
+    border:2px dashed #E7E3D9;
+    border-radius:16px;
+    padding:16px 16px 4px;
+    margin-top:14px;
+    position:relative;
+  }
+  .member-row .remove{
+    position:absolute; top:10px; right:14px;
+    background:none; border:none; color:var(--coral-deep);
+    font-weight:700; font-size:0.82rem; cursor:pointer; padding:0;
+  }
+  .add-member{
+    width:100%; margin-top:16px; padding:12px;
+    border-radius:12px; border:2px solid var(--teal);
+    background:transparent; color:var(--teal);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800;
+    cursor:pointer;
+  }
+  button.submit{
+    width:100%; margin-top:28px; padding:15px; border:none;
+    border-radius:999px; background:var(--coral); color:var(--white);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800; font-size:1.05rem;
+    cursor:pointer; box-shadow:0 10px 20px rgba(255,106,85,0.32);
+  }
+  button.submit:disabled{opacity:0.6;cursor:default;}
+  .error{margin-top:14px;color:var(--coral-deep);font-size:0.88rem;display:none;}
+  .note{margin-top:18px;font-size:0.78rem;color:var(--ink-soft);text-align:center;line-height:1.7;}
+
+  .done{display:none;text-align:center;}
+  .done .id-badge{
+    background:var(--ink); color:var(--white);
+    border-radius:16px; padding:22px; margin:20px 0;
+  }
+  .done .id-badge .label{font-size:0.8rem;opacity:0.7;}
+  .done .id-badge .id{
+    font-family:"M PLUS Rounded 1c", sans-serif;
+    font-size:1.6rem; font-weight:900; letter-spacing:0.06em; margin-top:4px;
+  }
+  .done p{color:var(--ink-soft);font-size:0.92rem;line-height:1.7;}
+  .done a.btn{
+    display:inline-block; margin-top:16px; padding:14px 28px;
+    border-radius:999px; background:var(--teal); color:var(--white);
+    text-decoration:none; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div id="formView">
+    <div class="brand">AIR TRICK<span>.</span></div>
+    <h1>会員登録</h1>
+
+    <h2>代表者情報</h2>
+    <p class="hint">代表者ご本人も遊ばれる場合は、下の生年月日も入力してください。</p>
+    <label for="name">お名前</label>
+    <input id="name" type="text" placeholder="山口 太郎" autocomplete="name">
+    <label for="phone">電話番号</label>
+    <input id="phone" type="tel" placeholder="09012345678" autocomplete="tel">
+    <label for="birthdate">生年月日</label>
+    <input id="birthdate" type="date">
+
+    <h2>一緒に来る方</h2>
+    <p class="hint">スマホを持っていないお子さんも、ここで追加できます。</p>
+    <div id="memberList"></div>
+    <button type="button" class="add-member" onclick="addMemberRow()">＋ 一緒に来る方を追加</button>
+
+    <button class="submit" id="submitBtn" onclick="submitForm()">登録する</button>
+    <div class="error" id="errorMsg"></div>
+    <p class="note">登録後、マイページのURLが発行されます。ブックマークまたはホーム画面に追加しておくと、次回から来店時にすぐ開けます。</p>
+  </div>
+
+  <div class="done" id="doneView">
+    <div class="brand">AIR TRICK<span>.</span></div>
+    <h1>登録が完了しました</h1>
+    <div class="id-badge">
+      <div class="label">会員ID</div>
+      <div class="id" id="issuedId">--------</div>
+    </div>
+    <p>来店時はマイページを開き、表示されるQRコード（初回の方）またはバーコード（登録済みの方）をスタッフにご提示ください。</p>
+    <a class="btn" id="myPageLink" href="#">マイページを開く</a>
+  </div>
+</div>
+
+<script>
+// GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
+const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
+
+let memberCount = 0;
+
+function addMemberRow() {
+  memberCount++;
+  const id = 'member-' + memberCount;
+  const wrap = document.createElement('div');
+  wrap.className = 'member-row';
+  wrap.id = id;
+  wrap.innerHTML =
+    '<button type="button" class="remove" onclick="removeMemberRow(\'' + id + '\')">削除</button>' +
+    '<label>お名前</label>' +
+    '<input type="text" class="m-name" placeholder="山口 花子">' +
+    '<label>生年月日</label>' +
+    '<input type="date" class="m-birthdate">';
+  document.getElementById('memberList').appendChild(wrap);
+}
+
+function removeMemberRow(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function submitForm() {
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const birthdate = document.getElementById('birthdate').value;
+  const errorEl = document.getElementById('errorMsg');
+  const btn = document.getElementById('submitBtn');
+
+  errorEl.style.display = 'none';
+
+  if (!name || !phone || !birthdate) {
+    errorEl.textContent = '代表者のお名前・電話番号・生年月日を入力してください。';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const members = [];
+  document.querySelectorAll('.member-row').forEach(function (row) {
+    const mName = row.querySelector('.m-name').value.trim();
+    const mBirthdate = row.querySelector('.m-birthdate').value;
+    if (mName && mBirthdate) {
+      members.push({ name: mName, birthdate: mBirthdate });
+    }
+  });
+
+  btn.disabled = true;
+  btn.textContent = '登録中…';
+
+  fetch(API_URL, {
+    method: 'POST',
+    // Content-Type は text/plain にすること（プリフライトを避けるため。GAS側でJSONとしてパースする）
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      action: 'registerGroup',
+      payload: { name: name, phone: phone, birthdate: birthdate, members: members }
+    })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (result) {
+      if (!result.ok) {
+        throw new Error(result.error || '登録に失敗しました。');
+      }
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('doneView').style.display = 'block';
+      document.getElementById('issuedId').textContent = result.groupId;
+      document.getElementById('myPageLink').href = 'mypage.html?id=' + encodeURIComponent(result.groupId);
+    })
+    .catch(function (err) {
+      btn.disabled = false;
+      btn.textContent = '登録する';
+      errorEl.textContent = err.message || '登録に失敗しました。時間をおいて再度お試しください。';
+      errorEl.style.display = 'block';
+    });
+}
+</script>
+
+</body>
+</html>
