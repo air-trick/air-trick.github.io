@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   :root{
@@ -73,6 +72,12 @@
     padding:10px 14px;
     font-size:0.78rem;
     line-height:1.6;
+  }
+  .visit-count{
+    margin-top:10px;
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    font-weight:700;
   }
   .not-found{
     background:var(--white);
@@ -152,28 +157,19 @@ function renderMembers(members) {
       '<div class="member-category">' + escapeHtml(m.category) + '</div>' +
       '<div class="code-area" id="' + codeAreaId + '"></div>' +
       (m.status === '未対応'
-        ? '<div class="status-badge pending">初回のお客様です</div>' +
+        ? '<div class="status-badge pending">初めてのご来店の際にご提示ください</div>' +
           '<div class="qr-warning">このQRコードはスタッフのみ読み取ってください。読み取り後のキャンセルはできません。</div>'
-        : '<div class="status-badge done">このバーコードをご提示ください</div>');
+        : '<div class="status-badge done">来店時はこのQRコードをご提示ください</div>' +
+          '<div class="visit-count">通算来店回数：' + m.visitCount + '回</div>');
 
     membersEl.appendChild(card);
 
-    if (m.codeType === 'qr') {
-      new QRCode(document.getElementById(codeAreaId), {
-        text: m.codeValue,
-        width: 160,
-        height: 160
-      });
-    } else {
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      document.getElementById(codeAreaId).appendChild(svg);
-      JsBarcode(svg, m.codeValue, {
-        format: 'CODE39',
-        width: 2,
-        height: 70,
-        displayValue: false
-      });
-    }
+    // 来店のたびに毎回この個人QR（本人ID）を読み取ってもらう方式に統一している。
+    new QRCode(document.getElementById(codeAreaId), {
+      text: m.personId,
+      width: 160,
+      height: 160
+    });
   });
 }
 
