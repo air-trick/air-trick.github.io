@@ -105,7 +105,7 @@
     </div>
 
     <div class="list-title">
-      <span>本日の初回対応</span>
+      <span>本日の初回対応（登録料が必要な方）</span>
       <span class="count" id="countBadge">0名</span>
     </div>
     <ul class="checkin-list" id="checkinList"></ul>
@@ -147,13 +147,15 @@ if (!STAFF_KEY_CLIENT) {
   }, 2000);
 }
 
+// 来店のたびに（初回でも2回目以降でも）毎回この関数が呼ばれる。
+// 入場料はここで返る区分を見て、Airレジ側で手動会計する。
 function handleScan(personId) {
   fetch(API_URL, {
     method: 'POST',
     // Content-Type は text/plain にすること（プリフライトを避けるため。GAS側でJSONとしてパースする）
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({
-      action: 'checkInPerson',
+      action: 'recordVisit',
       staffKey: STAFF_KEY_CLIENT,
       payload: { personId: personId }
     })
@@ -163,11 +165,11 @@ function handleScan(personId) {
       if (!res.ok) {
         throw new Error(res.error || '読み取りに失敗しました');
       }
-      if (res.alreadyDone) {
-        showResult('warn', res.name + '様は対応済みです（重複読み取り）');
-      } else {
-        showResult('ok', res.name + '様の初回対応が完了しました');
+      if (res.isFirstVisit) {
+        showResult('warn', res.name + '様　初めてのご来店です（登録料500円をご案内ください）／区分：' + res.category);
         addToList(res.name);
+      } else {
+        showResult('ok', res.name + '様　ご来店／区分：' + res.category);
       }
     })
     .catch(function (err) {
