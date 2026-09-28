@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIR TRICK 会員ページ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --ink:#182848; --ink-soft:#2b3b63;
+    --coral:#FF6A55; --coral-deep:#E5503C;
+    --teal:#2CB6AD; --marigold:#FFC24B;
+    --cloud:#FBFAF6; --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh;
+    background:
+      radial-gradient(120% 90% at 85% 0%, rgba(255,194,75,0.30), transparent 55%),
+      radial-gradient(120% 90% at 10% 100%, rgba(44,182,173,0.25), transparent 55%),
+      var(--cloud);
+    font-family:"Noto Sans JP", sans-serif;
+    color:var(--ink);
+    padding:32px 16px;
+  }
+  .page{width:100%; max-width:480px; margin:0 auto;}
+  .brand{
+    font-family:"M PLUS Rounded 1c", sans-serif;
+    font-weight:900; font-size:1.4rem;
+    text-align:center; margin-bottom:24px;
+  }
+  .brand span{color:var(--coral-deep);}
+  .member-card{
+    background:var(--white);
+    border-radius:22px;
+    padding:26px 24px;
+    margin-bottom:20px;
+    box-shadow:0 14px 30px rgba(24,40,72,0.10);
+    text-align:center;
+  }
+  .member-name{
+    font-family:"M PLUS Rounded 1c", sans-serif;
+    font-weight:800; font-size:1.2rem;
+  }
+  .member-category{
+    display:inline-block;
+    margin-top:6px;
+    padding:4px 14px;
+    border-radius:999px;
+    background:var(--cloud);
+    color:var(--ink-soft);
+    font-size:0.8rem;
+    font-weight:700;
+  }
+  .code-area{margin-top:18px;}
+  .code-area svg, .code-area canvas, .code-area img{margin:0 auto;}
+  .status-badge{
+    margin-top:10px;
+    font-size:0.82rem;
+    font-weight:700;
+  }
+  .status-badge.pending{color:var(--coral-deep);}
+  .status-badge.done{color:var(--teal);}
+  .qr-warning{
+    margin-top:12px;
+    background:#FFF4E9;
+    color:#9A5B12;
+    border-radius:12px;
+    padding:10px 14px;
+    font-size:0.78rem;
+    line-height:1.6;
+  }
+  .not-found{
+    background:var(--white);
+    border-radius:22px;
+    padding:32px 24px;
+    text-align:center;
+    color:var(--ink-soft);
+    line-height:1.8;
+    display:none;
+  }
+  .not-found a{color:var(--coral-deep);font-weight:700;}
+  .loading{
+    background:var(--white);
+    border-radius:22px;
+    padding:32px 24px;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="brand">AIR TRICK<span>.</span></div>
+
+  <div id="loading" class="loading">読み込み中…</div>
+  <div id="members"></div>
+  <div class="not-found" id="notFound">
+    会員情報が見つかりませんでした。<br>
+    URLをご確認いただくか、再度<a href="register.html">会員登録</a>をお願いします。
+  </div>
+</div>
+
+<script>
+// GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
+const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
+
+const params = new URLSearchParams(window.location.search);
+const groupId = params.get('id');
+
+const loadingEl = document.getElementById('loading');
+const membersEl = document.getElementById('members');
+const notFoundEl = document.getElementById('notFound');
+
+if (!groupId) {
+  showNotFound();
+} else {
+  fetch(API_URL + '?action=getGroupMembers&groupId=' + encodeURIComponent(groupId))
+    .then(function (res) { return res.json(); })
+    .then(function (result) {
+      loadingEl.style.display = 'none';
+      if (!result.ok || !result.found) {
+        showNotFound();
+        return;
+      }
+      renderMembers(result.members);
+    })
+    .catch(function () {
+      loadingEl.style.display = 'none';
+      showNotFound();
+    });
+}
+
+function showNotFound() {
+  loadingEl.style.display = 'none';
+  notFoundEl.style.display = 'block';
+}
+
+function renderMembers(members) {
+  members.forEach(function (m, index) {
+    const card = document.createElement('div');
+    card.className = 'member-card';
+
+    const codeAreaId = 'code-' + index;
+    card.innerHTML =
+      '<div class="member-name">' + escapeHtml(m.name) + '</div>' +
+      '<div class="member-category">' + escapeHtml(m.category) + '</div>' +
+      '<div class="code-area" id="' + codeAreaId + '"></div>' +
+      (m.status === '未対応'
+        ? '<div class="status-badge pending">初回のお客様です</div>' +
+          '<div class="qr-warning">このQRコードはスタッフのみ読み取ってください。読み取り後のキャンセルはできません。</div>'
+        : '<div class="status-badge done">このバーコードをご提示ください</div>');
+
+    membersEl.appendChild(card);
+
+    if (m.codeType === 'qr') {
+      new QRCode(document.getElementById(codeAreaId), {
+        text: m.codeValue,
+        width: 160,
+        height: 160
+      });
+    } else {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      document.getElementById(codeAreaId).appendChild(svg);
+      JsBarcode(svg, m.codeValue, {
+        format: 'CODE39',
+        width: 2,
+        height: 70,
+        displayValue: false
+      });
+    }
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>
