@@ -43,10 +43,10 @@
     padding:24px;
   }
   input{
-    width:100%; padding:16px; font-size:1.1rem;
+    width:100%; padding:16px; font-size:1.05rem;
     border-radius:14px; border:none;
     text-align:center; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800;
-    letter-spacing:0.05em;
+    letter-spacing:0.03em;
   }
   input:focus{outline:3px solid var(--teal);}
   .scan-hint{text-align:center; font-size:0.78rem; opacity:0.6; margin-top:10px;}
@@ -55,12 +55,14 @@
     margin-top:18px;
     border-radius:16px;
     padding:16px 18px;
-    font-weight:700;
     display:none;
   }
   .result.ok{background:rgba(44,182,173,0.18); border:1px solid var(--teal);}
   .result.warn{background:rgba(255,194,75,0.18); border:1px solid var(--marigold);}
   .result.error{background:rgba(255,106,85,0.18); border:1px solid var(--coral);}
+  .result .rtotal{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800; font-size:1.1rem;}
+  .result .rline{font-size:0.88rem; margin-top:6px; line-height:1.7;}
+  .result .rline .first{color:var(--marigold); font-weight:800;}
 
   .list-title{
     margin:30px 0 10px;
@@ -99,7 +101,7 @@
 
   <div id="scanView">
     <div class="scan-box">
-      <input id="scanInput" type="text" placeholder="QRコードを読み取る" autofocus>
+      <input id="scanInput" type="text" placeholder="入場QRを読み取る" autofocus>
       <div class="scan-hint">バーコードリーダーで読み取るか、手入力してEnterを押してください</div>
       <div class="result" id="resultBox"></div>
     </div>
@@ -138,7 +140,6 @@ if (!STAFF_KEY_CLIENT) {
     }
   });
 
-  // スキャナーがフォーカスを外してしまった場合に備え、常に入力欄へフォーカスを戻す
   document.addEventListener('click', function () {
     input.focus();
   });
@@ -147,39 +148,56 @@ if (!STAFF_KEY_CLIENT) {
   }, 2000);
 }
 
-// 来店のたびに（初回でも2回目以降でも）毎回この関数が呼ばれる。
-// 入場料はここで返る区分を見て、Airレジ側で手動会計する。
-function handleScan(personId) {
+// 入場QRの中身は、今日の入場者の本人IDをカンマ区切りにしたもの（1人だけのことも、複数人のこともある）。
+function handleScan(rawValue) {
+  const personIds = rawValue.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  if (personIds.length === 0) return;
+
   fetch(API_URL, {
     method: 'POST',
     // Content-Type は text/plain にすること（プリフライトを避けるため。GAS側でJSONとしてパースする）
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({
-      action: 'recordVisit',
+      action: 'recordGroupVisit',
       staffKey: STAFF_KEY_CLIENT,
-      payload: { personId: personId }
+      payload: { personIds: personIds }
     })
   })
     .then(function (res) { return res.json(); })
     .then(function (res) {
-      if (!res.ok) {
-        throw new Error(res.error || '読み取りに失敗しました');
-      }
-      if (res.isFirstVisit) {
-        showResult('warn', res.name + '様　初めてのご来店です（登録料500円をご案内ください）／区分：' + res.category);
-        addToList(res.name);
-      } else {
-        showResult('ok', res.name + '様　ご来店／区分：' + res.category);
-      }
+      if (!res.ok) throw new Error(res.error || '読み取りに失敗しました');
+      showGroupResult(res.result);
     })
     .catch(function (err) {
-      showResult('error', err.message || '読み取りに失敗しました');
+      showResult('error', '<div class="rline">' + escapeHtml(err.message || '読み取りに失敗しました') + '</div>');
     });
 }
 
-function showResult(type, message) {
+function showGroupResult(result) {
+  const firstTimers = result.members.filter(function (m) { return m.isFirstVisit; });
+  const type = firstTimers.length > 0 ? 'warn' : 'ok';
+
+  const breakdown = Object.keys(result.byCategory).map(function (cat) {
+    const c = result.byCategory[cat];
+    let line = escapeHtml(cat) + ' ' + c.count + '名';
+    if (c.firstTimeCount > 0) {
+      line += '<span class="first">（うち初回 ' + c.firstTimeCount + '名）</span>';
+    }
+    return line;
+  }).join('<br>');
+
+  let html = '<div class="rtotal">' + result.total + '名 ご来店</div><div class="rline">' + breakdown + '</div>';
+  if (firstTimers.length > 0) {
+    html += '<div class="rline">初回の方（登録料500円）：' + firstTimers.map(function (m) { return escapeHtml(m.name); }).join('・') + '様</div>';
+  }
+  showResult(type, html);
+
+  firstTimers.forEach(function (m) { addToList(m.name); });
+}
+
+function showResult(type, html) {
   resultBox.className = 'result ' + type;
-  resultBox.textContent = message;
+  resultBox.innerHTML = html;
   resultBox.style.display = 'block';
 }
 
