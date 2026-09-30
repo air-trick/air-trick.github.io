@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIR TRICK 会員ページ</title>
+<title>AIR TRICK マイページ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -24,78 +24,126 @@
       var(--cloud);
     font-family:"Noto Sans JP", sans-serif;
     color:var(--ink);
-    padding:32px 16px;
+    padding:28px 16px 60px;
   }
   .page{width:100%; max-width:480px; margin:0 auto;}
   .brand{
     font-family:"M PLUS Rounded 1c", sans-serif;
-    font-weight:900; font-size:1.4rem;
-    text-align:center; margin-bottom:24px;
+    font-weight:900; font-size:1.3rem;
+    text-align:center; margin-bottom:4px;
   }
   .brand span{color:var(--coral-deep);}
-  .member-card{
-    background:var(--white);
-    border-radius:22px;
-    padding:26px 24px;
-    margin-bottom:20px;
-    box-shadow:0 14px 30px rgba(24,40,72,0.10);
-    text-align:center;
+
+  .card{
+    background:var(--white); border-radius:20px; padding:22px 20px;
+    margin-top:18px; box-shadow:0 12px 26px rgba(24,40,72,0.08);
   }
-  .member-name{
+  .card h2{
     font-family:"M PLUS Rounded 1c", sans-serif;
-    font-weight:800; font-size:1.2rem;
+    font-size:0.98rem; margin:0 0 12px; color:var(--ink);
   }
-  .member-category{
-    display:inline-block;
-    margin-top:6px;
-    padding:4px 14px;
-    border-radius:999px;
-    background:var(--cloud);
-    color:var(--ink-soft);
-    font-size:0.8rem;
-    font-weight:700;
+
+  .me-name{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800; font-size:1.1rem; text-align:center;}
+  .me-sub{text-align:center; font-size:0.8rem; color:var(--ink-soft); margin-top:4px;}
+  .badge{
+    display:inline-block; padding:3px 12px; border-radius:999px;
+    background:var(--cloud); color:var(--ink-soft); font-size:0.76rem; font-weight:700;
   }
-  .code-area{margin-top:18px;}
-  .code-area svg, .code-area canvas, .code-area img{margin:0 auto;}
-  .status-badge{
-    margin-top:10px;
-    font-size:0.82rem;
-    font-weight:700;
+
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+  .chip{
+    padding:8px 14px; border-radius:999px; border:2px solid #E7E3D9;
+    background:var(--white); font-size:0.84rem; font-weight:700; cursor:pointer;
+    color:var(--ink);
   }
-  .status-badge.pending{color:var(--coral-deep);}
-  .status-badge.done{color:var(--teal);}
-  .qr-warning{
-    margin-top:12px;
-    background:#FFF4E9;
-    color:#9A5B12;
-    border-radius:12px;
-    padding:10px 14px;
-    font-size:0.78rem;
-    line-height:1.6;
+  .chip.group{border-color:var(--teal); color:var(--teal);}
+  .chip.companion{border-color:var(--marigold); color:#9A5B12;}
+  .chip.empty{color:var(--ink-soft); border-style:dashed; cursor:default;}
+
+  .entrant-list{list-style:none; margin:0; padding:0;}
+  .entrant-list li{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 4px; border-bottom:1px solid #F1EEE6;
   }
-  .visit-count{
-    margin-top:10px;
-    font-size:0.8rem;
-    color:var(--ink-soft);
-    font-weight:700;
+  .entrant-list li:last-child{border-bottom:none;}
+  .entrant-list input[type=checkbox]{width:20px; height:20px; flex:none;}
+  .entrant-list .ename{flex:1; font-weight:700; font-size:0.92rem;}
+  .entrant-list .ecat{font-size:0.76rem; color:var(--ink-soft);}
+  .entrant-list .eremove{background:none; border:none; color:var(--coral-deep); font-size:0.78rem; cursor:pointer;}
+
+  .search-row{display:flex; gap:8px; margin-top:10px;}
+  .search-row input{flex:1;}
+  label{display:block;font-weight:700;font-size:0.82rem;margin:12px 0 6px;}
+  input{
+    width:100%; padding:11px 12px;
+    border-radius:10px; border:2px solid #E7E3D9;
+    font-size:0.95rem; font-family:inherit;
   }
-  .not-found{
-    background:var(--white);
-    border-radius:22px;
-    padding:32px 24px;
-    text-align:center;
-    color:var(--ink-soft);
-    line-height:1.8;
-    display:none;
+  input:focus{outline:none;border-color:var(--teal);}
+  button.small{
+    padding:11px 16px; border-radius:10px; border:none;
+    background:var(--teal); color:var(--white); font-weight:800; font-size:0.85rem;
+    cursor:pointer; white-space:nowrap;
   }
-  .not-found a{color:var(--coral-deep);font-weight:700;}
-  .loading{
-    background:var(--white);
-    border-radius:22px;
-    padding:32px 24px;
-    text-align:center;
-    color:var(--ink-soft);
+  button.small:disabled{opacity:0.5;}
+  .search-result{margin-top:8px; font-size:0.84rem;}
+  .search-result .found-item{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--cloud); border-radius:10px; padding:8px 12px; margin-top:6px;
   }
+  .search-result button{
+    padding:6px 12px; border-radius:999px; border:none; background:var(--coral);
+    color:var(--white); font-weight:700; font-size:0.78rem; cursor:pointer;
+  }
+  .new-person-form{
+    display:none; margin-top:10px; border:2px dashed #E7E3D9; border-radius:12px; padding:12px;
+  }
+  .new-person-form button{
+    margin-top:10px; width:100%; padding:10px; border:none; border-radius:10px;
+    background:var(--coral-deep); color:var(--white); font-weight:800; cursor:pointer;
+  }
+
+  .summary{
+    background:var(--ink); color:var(--white); border-radius:16px; padding:18px 20px; margin-top:16px;
+  }
+  .summary .total{font-family:"M PLUS Rounded 1c", sans-serif; font-size:1.3rem; font-weight:900; text-align:center;}
+  .summary .breakdown{margin-top:10px; font-size:0.86rem; line-height:1.9;}
+  .summary .breakdown span.n{float:right; opacity:0.85;}
+
+  .issue-btn{
+    width:100%; margin-top:16px; padding:16px; border:none;
+    border-radius:999px; background:var(--coral); color:var(--white);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800; font-size:1.05rem;
+    cursor:pointer; box-shadow:0 10px 20px rgba(255,106,85,0.32);
+  }
+  .issue-btn:disabled{opacity:0.5;}
+
+  .qr-box{text-align:center; margin-top:14px;}
+  .qr-box .qr-area{margin-top:10px;}
+  .qr-box .qr-area svg, .qr-box .qr-area canvas, .qr-box .qr-area img{margin:0 auto;}
+  .qr-note{margin-top:10px; font-size:0.82rem; color:var(--ink-soft); line-height:1.7;}
+  .edit-again{
+    margin-top:14px; background:none; border:none; color:var(--teal);
+    font-weight:700; font-size:0.85rem; cursor:pointer;
+  }
+
+  .group-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; border-bottom:1px solid #F1EEE6;
+  }
+  .group-item:last-child{border-bottom:none;}
+  .group-item .gname{font-weight:700; font-size:0.9rem;}
+  .group-item .gmembers{font-size:0.76rem; color:var(--ink-soft);}
+  .group-item button{
+    background:none; border:none; color:var(--teal); font-size:0.78rem; font-weight:700; cursor:pointer;
+  }
+
+  .error{margin-top:10px;color:var(--coral-deep);font-size:0.86rem;display:none;}
+  .loading, .not-found{
+    background:var(--white); border-radius:20px; padding:32px 24px;
+    text-align:center; color:var(--ink-soft); line-height:1.8;
+  }
+  .not-found a{color:var(--coral-deep); font-weight:700;}
 </style>
 </head>
 <body>
@@ -104,10 +152,65 @@
   <div class="brand">AIR TRICK<span>.</span></div>
 
   <div id="loading" class="loading">読み込み中…</div>
-  <div id="members"></div>
-  <div class="not-found" id="notFound">
+  <div class="not-found" id="notFound" style="display:none;">
     会員情報が見つかりませんでした。<br>
-    URLをご確認いただくか、再度<a href="register.html">会員登録</a>をお願いします。
+    <a href="login.html">ログイン画面</a>からやり直すか、<a href="register.html">新規登録</a>をお願いします。
+  </div>
+
+  <div id="content" style="display:none;">
+    <div class="card">
+      <div class="me-name" id="meName"></div>
+      <div class="me-sub"><span class="badge" id="meCategory"></span>　通算来店回数：<span id="meVisitCount"></span>回</div>
+    </div>
+
+    <div class="card">
+      <h2>本日の入場者を選ぶ</h2>
+
+      <div id="groupChips" class="chip-row"></div>
+      <div id="companionChips" class="chip-row" style="margin-top:10px;"></div>
+
+      <div class="search-row">
+        <input id="searchKana" type="text" placeholder="フリガナで検索">
+        <input id="searchBirthdate" type="date" style="max-width:150px;">
+      </div>
+      <button class="small" style="margin-top:8px; width:100%;" id="searchBtn">検索して追加</button>
+      <div class="search-result" id="searchResult"></div>
+
+      <div class="new-person-form" id="newPersonForm">
+        <p style="margin:0 0 8px; font-size:0.82rem; color:var(--ink-soft);">見つかりませんでした。新しく登録しますか？</p>
+        <label>お名前</label>
+        <input id="npName" type="text" placeholder="山口 花子">
+        <label>フリガナ</label>
+        <input id="npKana" type="text" placeholder="ヤマグチ ハナコ">
+        <label>生年月日</label>
+        <input id="npBirthdate" type="date">
+        <button id="npSubmit">登録して追加</button>
+      </div>
+
+      <h2 style="margin-top:22px;">選ばれている人</h2>
+      <ul class="entrant-list" id="entrantList"></ul>
+      <div class="error" id="entrantError"></div>
+    </div>
+
+    <div class="summary" id="summary">
+      <div class="total" id="summaryTotal">0名</div>
+      <div class="breakdown" id="summaryBreakdown"></div>
+    </div>
+
+    <button class="issue-btn" id="issueBtn">入場QRを発行</button>
+
+    <div class="card qr-box" id="qrBox" style="display:none;">
+      <h2>スタッフにこの画面をご提示ください</h2>
+      <div class="qr-area" id="qrArea"></div>
+      <div class="qr-note" id="qrSummaryText"></div>
+      <button class="edit-again" id="editAgainBtn">入場者を選び直す</button>
+    </div>
+
+    <div class="card">
+      <h2>保存済みグループ</h2>
+      <div id="groupList"></div>
+      <button class="small" id="saveGroupBtn" style="margin-top:10px;">今選んでいるメンバーをグループとして保存</button>
+    </div>
   </div>
 </div>
 
@@ -115,63 +218,353 @@
 // GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
 const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
 
-const params = new URLSearchParams(window.location.search);
-const groupId = params.get('id');
+const myId = new URLSearchParams(window.location.search).get('id');
 
-const loadingEl = document.getElementById('loading');
-const membersEl = document.getElementById('members');
-const notFoundEl = document.getElementById('notFound');
+let me = null;
+let groups = [];
+let people = {};     // personId -> { name, category }
+let entrants = [];   // 選ばれている personId の配列（順番維持のため配列）
 
-if (!groupId) {
+const el = {
+  loading: document.getElementById('loading'),
+  notFound: document.getElementById('notFound'),
+  content: document.getElementById('content'),
+  meName: document.getElementById('meName'),
+  meCategory: document.getElementById('meCategory'),
+  meVisitCount: document.getElementById('meVisitCount'),
+  groupChips: document.getElementById('groupChips'),
+  companionChips: document.getElementById('companionChips'),
+  entrantList: document.getElementById('entrantList'),
+  entrantError: document.getElementById('entrantError'),
+  summaryTotal: document.getElementById('summaryTotal'),
+  summaryBreakdown: document.getElementById('summaryBreakdown'),
+  issueBtn: document.getElementById('issueBtn'),
+  qrBox: document.getElementById('qrBox'),
+  qrArea: document.getElementById('qrArea'),
+  qrSummaryText: document.getElementById('qrSummaryText'),
+  groupList: document.getElementById('groupList'),
+  searchResult: document.getElementById('searchResult'),
+  newPersonForm: document.getElementById('newPersonForm')
+};
+
+if (!myId) {
   showNotFound();
 } else {
-  fetch(API_URL + '?action=getGroupMembers&groupId=' + encodeURIComponent(groupId))
+  fetch(API_URL + '?action=getMyPage&id=' + encodeURIComponent(myId))
     .then(function (res) { return res.json(); })
-    .then(function (result) {
-      loadingEl.style.display = 'none';
-      if (!result.ok || !result.found) {
-        showNotFound();
-        return;
-      }
-      renderMembers(result.members);
+    .then(function (data) {
+      if (!data.ok || !data.page.found) { showNotFound(); return; }
+      init_(data.page);
     })
-    .catch(function () {
-      loadingEl.style.display = 'none';
-      showNotFound();
-    });
+    .catch(function () { showNotFound(); });
 }
 
 function showNotFound() {
-  loadingEl.style.display = 'none';
-  notFoundEl.style.display = 'block';
+  el.loading.style.display = 'none';
+  el.notFound.style.display = 'block';
 }
 
-function renderMembers(members) {
-  members.forEach(function (m, index) {
-    const card = document.createElement('div');
-    card.className = 'member-card';
+function init_(page) {
+  me = page.person;
+  groups = page.groups;
 
-    const codeAreaId = 'code-' + index;
-    card.innerHTML =
-      '<div class="member-name">' + escapeHtml(m.name) + '</div>' +
-      '<div class="member-category">' + escapeHtml(m.category) + '</div>' +
-      '<div class="code-area" id="' + codeAreaId + '"></div>' +
-      (m.status === '未対応'
-        ? '<div class="status-badge pending">初めてのご来店の際にご提示ください</div>' +
-          '<div class="qr-warning">このQRコードはスタッフのみ読み取ってください。読み取り後のキャンセルはできません。</div>'
-        : '<div class="status-badge done">来店時はこのQRコードをご提示ください</div>' +
-          '<div class="visit-count">通算来店回数：' + m.visitCount + '回</div>');
+  people[me.personId] = { name: me.name, category: me.category };
+  page.companions.forEach(function (p) { people[p.personId] = { name: p.name, category: p.category }; });
+  groups.forEach(function (g) {
+    g.members.forEach(function (p) { people[p.personId] = { name: p.name, category: p.category }; });
+  });
 
-    membersEl.appendChild(card);
+  el.meName.textContent = me.name;
+  el.meCategory.textContent = me.category;
+  el.meVisitCount.textContent = me.visitCount;
 
-    // 来店のたびに毎回この個人QR（本人ID）を読み取ってもらう方式に統一している。
-    new QRCode(document.getElementById(codeAreaId), {
-      text: m.personId,
-      width: 160,
-      height: 160
+  entrants = [me.personId];
+
+  renderGroupChips_();
+  renderCompanionChips_(page.companions.map(function (p) { return p.personId; }));
+  renderGroupList_();
+  renderEntrants_();
+
+  el.loading.style.display = 'none';
+  el.content.style.display = 'block';
+}
+
+function renderGroupChips_() {
+  el.groupChips.innerHTML = '';
+  if (groups.length === 0) {
+    const d = document.createElement('div');
+    d.className = 'chip empty';
+    d.textContent = '保存済みグループはまだありません';
+    el.groupChips.appendChild(d);
+    return;
+  }
+  groups.forEach(function (g) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip group';
+    btn.textContent = g.name + '（' + g.members.length + '人）';
+    btn.addEventListener('click', function () {
+      g.members.forEach(function (p) { addEntrant_(p.personId); });
+      renderEntrants_();
     });
+    el.groupChips.appendChild(btn);
   });
 }
+
+function renderCompanionChips_(companionIds) {
+  el.companionChips.innerHTML = '';
+  if (companionIds.length === 0) return;
+  companionIds.forEach(function (pid) {
+    const p = people[pid];
+    if (!p) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip companion';
+    btn.textContent = '＋ ' + p.name;
+    btn.addEventListener('click', function () {
+      addEntrant_(pid);
+      renderEntrants_();
+    });
+    el.companionChips.appendChild(btn);
+  });
+}
+
+function addEntrant_(personId) {
+  if (entrants.indexOf(personId) === -1) entrants.push(personId);
+}
+
+function renderEntrants_() {
+  el.entrantList.innerHTML = '';
+  entrants.forEach(function (pid) {
+    const p = people[pid];
+    if (!p) return;
+    const li = document.createElement('li');
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = true;
+    cb.dataset.pid = pid;
+    cb.addEventListener('change', renderSummary_);
+
+    const name = document.createElement('span');
+    name.className = 'ename';
+    name.textContent = p.name + (pid === me.personId ? '（自分）' : '');
+
+    const cat = document.createElement('span');
+    cat.className = 'ecat';
+    cat.textContent = p.category;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'eremove';
+    removeBtn.textContent = '削除';
+    removeBtn.addEventListener('click', function () {
+      entrants = entrants.filter(function (id) { return id !== pid; });
+      renderEntrants_();
+    });
+
+    li.appendChild(cb);
+    li.appendChild(name);
+    li.appendChild(cat);
+    li.appendChild(removeBtn);
+    el.entrantList.appendChild(li);
+  });
+  renderSummary_();
+}
+
+function checkedEntrantIds_() {
+  return Array.from(el.entrantList.querySelectorAll('input[type=checkbox]'))
+    .filter(function (cb) { return cb.checked; })
+    .map(function (cb) { return cb.dataset.pid; });
+}
+
+function renderSummary_() {
+  const ids = checkedEntrantIds_();
+  el.summaryTotal.textContent = ids.length + '名';
+
+  const byCategory = {};
+  ids.forEach(function (pid) {
+    const p = people[pid];
+    if (!p) return;
+    byCategory[p.category] = (byCategory[p.category] || 0) + 1;
+  });
+
+  el.summaryBreakdown.innerHTML = '';
+  Object.keys(byCategory).forEach(function (cat) {
+    const row = document.createElement('div');
+    row.innerHTML = cat + '<span class="n">' + byCategory[cat] + '名</span>';
+    el.summaryBreakdown.appendChild(row);
+  });
+
+  el.issueBtn.disabled = ids.length === 0;
+}
+
+// ---------- 検索して追加 ----------
+document.getElementById('searchBtn').addEventListener('click', function () {
+  const kana = document.getElementById('searchKana').value.trim();
+  const birthdate = document.getElementById('searchBirthdate').value;
+  el.searchResult.innerHTML = '';
+  el.newPersonForm.style.display = 'none';
+
+  if (!kana || !birthdate) {
+    el.searchResult.textContent = 'フリガナと生年月日を入力してください。';
+    return;
+  }
+
+  fetch(API_URL + '?action=searchPerson&kana=' + encodeURIComponent(kana) + '&birthdate=' + encodeURIComponent(birthdate))
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (!data.ok) throw new Error(data.error || '検索に失敗しました。');
+      if (data.matches.length === 0) {
+        el.newPersonForm.style.display = 'block';
+        document.getElementById('npName').value = '';
+        document.getElementById('npKana').value = kana;
+        document.getElementById('npBirthdate').value = birthdate;
+        return;
+      }
+      data.matches.forEach(function (m) {
+        people[m.personId] = { name: m.name, category: m.category };
+        const row = document.createElement('div');
+        row.className = 'found-item';
+        row.innerHTML = '<span>' + escapeHtml(m.name) + '（' + escapeHtml(m.category) + '）</span>';
+        const addBtn = document.createElement('button');
+        addBtn.textContent = '追加';
+        addBtn.addEventListener('click', function () {
+          addEntrant_(m.personId);
+          renderEntrants_();
+        });
+        row.appendChild(addBtn);
+        el.searchResult.appendChild(row);
+      });
+    })
+    .catch(function (err) {
+      el.searchResult.textContent = err.message || '検索に失敗しました。';
+    });
+});
+
+document.getElementById('npSubmit').addEventListener('click', function () {
+  const name = document.getElementById('npName').value.trim();
+  const kana = document.getElementById('npKana').value.trim();
+  const birthdate = document.getElementById('npBirthdate').value;
+
+  if (!name || !kana || !birthdate) {
+    alert('お名前・フリガナ・生年月日を入力してください。');
+    return;
+  }
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'addPerson', payload: { name: name, kana: kana, birthdate: birthdate } })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (!data.ok) throw new Error(data.error || '登録に失敗しました。');
+      const personId = data.result.personId;
+      people[personId] = { name: name, category: data.result.category };
+      addEntrant_(personId);
+      renderEntrants_();
+      el.newPersonForm.style.display = 'none';
+      el.searchResult.innerHTML = '';
+    })
+    .catch(function (err) {
+      alert(err.message || '登録に失敗しました。');
+    });
+});
+
+// ---------- QR発行 ----------
+document.getElementById('issueBtn').addEventListener('click', function () {
+  const ids = checkedEntrantIds_();
+  if (ids.length === 0) return;
+
+  el.qrArea.innerHTML = '';
+  new QRCode(el.qrArea, {
+    text: ids.join(','),
+    width: 220,
+    height: 220
+  });
+
+  const byCategory = {};
+  ids.forEach(function (pid) {
+    const p = people[pid];
+    if (!p) return;
+    byCategory[p.category] = (byCategory[p.category] || 0) + 1;
+  });
+  const parts = Object.keys(byCategory).map(function (cat) { return cat + ' ' + byCategory[cat] + '名'; });
+  el.qrSummaryText.textContent = ids.length + '名（' + parts.join('／') + '）';
+
+  el.qrBox.style.display = 'block';
+  el.qrBox.scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('editAgainBtn').addEventListener('click', function () {
+  el.qrBox.style.display = 'none';
+});
+
+// ---------- グループ保存・一覧 ----------
+function renderGroupList_() {
+  el.groupList.innerHTML = '';
+  if (groups.length === 0) {
+    el.groupList.innerHTML = '<p style="font-size:0.84rem; color:var(--ink-soft); margin:0;">まだグループはありません。</p>';
+    return;
+  }
+  groups.forEach(function (g) {
+    const row = document.createElement('div');
+    row.className = 'group-item';
+    const names = g.members.map(function (p) { return p.name; }).join('・');
+    row.innerHTML =
+      '<div><div class="gname">' + escapeHtml(g.name) + '</div><div class="gmembers">' + escapeHtml(names) + '</div></div>';
+    const renameBtn = document.createElement('button');
+    renameBtn.textContent = '名前を変更';
+    renameBtn.addEventListener('click', function () {
+      const newName = prompt('新しいグループ名を入力してください', g.name);
+      if (!newName) return;
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'renameGroup', payload: { groupId: g.groupId, name: newName } })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (!data.ok) throw new Error(data.error);
+          g.name = newName;
+          renderGroupList_();
+          renderGroupChips_();
+        })
+        .catch(function (err) { alert(err.message || '変更に失敗しました。'); });
+    });
+    row.appendChild(renameBtn);
+    el.groupList.appendChild(row);
+  });
+}
+
+document.getElementById('saveGroupBtn').addEventListener('click', function () {
+  const ids = checkedEntrantIds_();
+  if (ids.length === 0) {
+    alert('先に入場者を選んでください。');
+    return;
+  }
+  const name = prompt('グループ名を入力してください', 'グループ' + (groups.length + 1));
+  if (!name) return;
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'createGroup', payload: { ownerId: me.personId, name: name, memberIds: ids } })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (!data.ok) throw new Error(data.error);
+      groups.push({
+        groupId: data.result.groupId,
+        name: name,
+        members: ids.map(function (pid) { return { personId: pid, name: people[pid].name, category: people[pid].category }; })
+      });
+      renderGroupList_();
+      renderGroupChips_();
+    })
+    .catch(function (err) { alert(err.message || '保存に失敗しました。'); });
+});
 
 function escapeHtml(str) {
   const div = document.createElement('div');
