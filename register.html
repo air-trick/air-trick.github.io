@@ -113,29 +113,31 @@
     <p class="hint">代表者ご本人も遊ばれる場合は、下の生年月日も入力してください。</p>
     <label for="name">お名前</label>
     <input id="name" type="text" placeholder="山口 太郎" autocomplete="name">
+    <label for="kana">フリガナ</label>
+    <input id="kana" type="text" placeholder="ヤマグチ タロウ">
     <label for="phone">電話番号</label>
     <input id="phone" type="tel" placeholder="09012345678" autocomplete="tel">
     <label for="birthdate">生年月日</label>
     <input id="birthdate" type="date">
 
     <h2>一緒に来る方</h2>
-    <p class="hint">スマホを持っていないお子さんも、ここで追加できます。</p>
+    <p class="hint">スマホを持っていないお子さんも、ここで追加できます。それぞれ自分専用のマイページが作成されます。</p>
     <div id="memberList"></div>
     <button type="button" class="add-member" onclick="addMemberRow()">＋ 一緒に来る方を追加</button>
 
     <button class="submit" id="submitBtn" onclick="submitForm()">登録する</button>
     <div class="error" id="errorMsg"></div>
-    <p class="note">登録後、マイページのURLが発行されます。ブックマークまたはホーム画面に追加しておくと、次回から来店時にすぐ開けます。</p>
+    <p class="note">登録後、ご自身のマイページが作成されます。ブックマークまたはホーム画面に追加しておくと、次回から来店時にすぐ開けます。次回以降はログイン画面（フリガナ＋生年月日）からも開けます。</p>
   </div>
 
   <div class="done" id="doneView">
     <div class="brand">AIR TRICK<span>.</span></div>
     <h1>登録が完了しました</h1>
     <div class="id-badge">
-      <div class="label">会員ID</div>
+      <div class="label">代表者様の会員番号</div>
       <div class="id" id="issuedId">--------</div>
     </div>
-    <p>来店時はマイページを開き、表示されるQRコード（初回の方）またはバーコード（登録済みの方）をスタッフにご提示ください。</p>
+    <p>一緒に登録した方も、それぞれ自分専用のマイページが作成されています。<br>来店時はマイページを開き、今日の入場者を選んでQRコードを発行し、スタッフにご提示ください。</p>
     <a class="btn" id="myPageLink" href="#">マイページを開く</a>
   </div>
 </div>
@@ -143,6 +145,8 @@
 <script>
 // GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
 const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
+const STORAGE_KEY = 'airtrick_personId';
+const STORAGE_NAME_KEY = 'airtrick_personName';
 
 let memberCount = 0;
 
@@ -156,6 +160,8 @@ function addMemberRow() {
     '<button type="button" class="remove" onclick="removeMemberRow(\'' + id + '\')">削除</button>' +
     '<label>お名前</label>' +
     '<input type="text" class="m-name" placeholder="山口 花子">' +
+    '<label>フリガナ</label>' +
+    '<input type="text" class="m-kana" placeholder="ヤマグチ ハナコ">' +
     '<label>生年月日</label>' +
     '<input type="date" class="m-birthdate">';
   document.getElementById('memberList').appendChild(wrap);
@@ -168,6 +174,7 @@ function removeMemberRow(id) {
 
 function submitForm() {
   const name = document.getElementById('name').value.trim();
+  const kana = document.getElementById('kana').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const birthdate = document.getElementById('birthdate').value;
   const errorEl = document.getElementById('errorMsg');
@@ -175,8 +182,8 @@ function submitForm() {
 
   errorEl.style.display = 'none';
 
-  if (!name || !phone || !birthdate) {
-    errorEl.textContent = '代表者のお名前・電話番号・生年月日を入力してください。';
+  if (!name || !kana || !phone || !birthdate) {
+    errorEl.textContent = '代表者のお名前・フリガナ・電話番号・生年月日を入力してください。';
     errorEl.style.display = 'block';
     return;
   }
@@ -184,9 +191,10 @@ function submitForm() {
   const members = [];
   document.querySelectorAll('.member-row').forEach(function (row) {
     const mName = row.querySelector('.m-name').value.trim();
+    const mKana = row.querySelector('.m-kana').value.trim();
     const mBirthdate = row.querySelector('.m-birthdate').value;
-    if (mName && mBirthdate) {
-      members.push({ name: mName, birthdate: mBirthdate });
+    if (mName && mKana && mBirthdate) {
+      members.push({ name: mName, kana: mKana, birthdate: mBirthdate });
     }
   });
 
@@ -198,19 +206,25 @@ function submitForm() {
     // Content-Type は text/plain にすること（プリフライトを避けるため。GAS側でJSONとしてパースする）
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({
-      action: 'registerGroup',
-      payload: { name: name, phone: phone, birthdate: birthdate, members: members }
+      action: 'register',
+      payload: { name: name, kana: kana, phone: phone, birthdate: birthdate, members: members }
     })
   })
     .then(function (res) { return res.json(); })
-    .then(function (result) {
-      if (!result.ok) {
-        throw new Error(result.error || '登録に失敗しました。');
+    .then(function (data) {
+      if (!data.ok) {
+        throw new Error(data.error || '登録に失敗しました。');
       }
+      const personId = data.result.personId;
+      try {
+        localStorage.setItem(STORAGE_KEY, personId);
+        localStorage.setItem(STORAGE_NAME_KEY, kana);
+      } catch (e) { /* 保存できなくても続行 */ }
+
       document.getElementById('formView').style.display = 'none';
       document.getElementById('doneView').style.display = 'block';
-      document.getElementById('issuedId').textContent = result.groupId;
-      document.getElementById('myPageLink').href = 'mypage.html?id=' + encodeURIComponent(result.groupId);
+      document.getElementById('issuedId').textContent = personId;
+      document.getElementById('myPageLink').href = 'mypage.html?id=' + encodeURIComponent(personId);
     })
     .catch(function (err) {
       btn.disabled = false;
