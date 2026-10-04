@@ -12,27 +12,30 @@
   :root{
     --ink:#182848; --ink-soft:#2b3b63;
     --coral:#FF6A55; --coral-deep:#E5503C;
-    --teal:#2CB6AD; --marigold:#FFC24B;
+    --teal:#2CB6AD; --teal-deep:#1f8f88; --marigold:#FFC24B;
     --cloud:#FBFAF6; --white:#FFFFFF;
   }
   *{box-sizing:border-box;}
   body{
     margin:0; min-height:100vh;
-    background:
-      radial-gradient(120% 90% at 85% 0%, rgba(255,194,75,0.30), transparent 55%),
-      radial-gradient(120% 90% at 10% 100%, rgba(44,182,173,0.25), transparent 55%),
-      var(--cloud);
+    background:#EAF4FB;
     font-family:"Noto Sans JP", sans-serif;
     color:var(--ink);
-    padding:28px 16px 60px;
   }
-  .page{width:100%; max-width:480px; margin:0 auto;}
-  .brand{
-    font-family:"M PLUS Rounded 1c", sans-serif;
-    font-weight:900; font-size:1.3rem;
-    text-align:center; margin-bottom:4px;
+  body::before{
+    content:''; position:fixed; inset:0; z-index:-1;
+    background:
+      linear-gradient(rgba(255,255,255,0.84), rgba(255,255,255,0.84)),
+      url('assets/sky.jpg') center/cover no-repeat;
   }
-  .brand span{color:var(--coral-deep);}
+  .site-header{
+    position:sticky; top:0; z-index:20;
+    background:var(--white); padding:8px 16px;
+    box-shadow:0 2px 14px rgba(24,40,72,0.10);
+  }
+  .site-header a{display:block;}
+  .site-header img{display:block; height:48px; width:auto; margin:0 auto;}
+  .page{width:100%; max-width:480px; margin:0 auto; padding:8px 16px 60px;}
 
   .card{
     background:var(--white); border-radius:20px; padding:22px 20px;
@@ -56,7 +59,7 @@
     background:var(--white); font-size:0.84rem; font-weight:700; cursor:pointer;
     color:var(--ink);
   }
-  .chip.group{border-color:var(--teal); color:var(--teal);}
+  .chip.group{border-color:var(--teal); color:var(--teal-deep);}
   .chip.companion{border-color:var(--marigold); color:#9A5B12;}
   .chip.empty{color:var(--ink-soft); border-style:dashed; cursor:default;}
 
@@ -80,11 +83,17 @@
     font-size:0.95rem; font-family:inherit;
   }
   input:focus{outline:none;border-color:var(--teal);}
+
+  /* バッジ風ボタン（トップページと共通） */
   button.small{
-    padding:11px 16px; border-radius:10px; border:none;
-    background:var(--teal); color:var(--white); font-weight:800; font-size:0.85rem;
+    padding:10px 16px; border-radius:10px;
+    background:var(--white); color:var(--teal-deep);
+    border:2px solid var(--teal); box-shadow:3px 3px 0 var(--teal);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.85rem;
     cursor:pointer; white-space:nowrap;
+    transition:transform .08s, box-shadow .08s;
   }
+  button.small:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--teal);}
   button.small:disabled{opacity:0.5;}
   .search-result{margin-top:8px; font-size:0.84rem;}
   .search-result .found-item{
@@ -92,15 +101,20 @@
     background:var(--cloud); border-radius:10px; padding:8px 12px; margin-top:6px;
   }
   .search-result button{
-    padding:6px 12px; border-radius:999px; border:none; background:var(--coral);
-    color:var(--white); font-weight:700; font-size:0.78rem; cursor:pointer;
+    padding:6px 14px; border-radius:10px;
+    background:linear-gradient(135deg, var(--marigold), var(--coral));
+    color:var(--ink); border:2px solid var(--ink); box-shadow:2px 2px 0 var(--ink);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.78rem; cursor:pointer;
   }
   .new-person-form{
     display:none; margin-top:10px; border:2px dashed #E7E3D9; border-radius:12px; padding:12px;
   }
   .new-person-form button{
-    margin-top:10px; width:100%; padding:10px; border:none; border-radius:10px;
-    background:var(--coral-deep); color:var(--white); font-weight:800; cursor:pointer;
+    margin-top:12px; width:100%; padding:11px;
+    border-radius:10px; border:2px solid var(--ink);
+    background:linear-gradient(135deg, var(--marigold), var(--coral));
+    color:var(--ink); box-shadow:3px 3px 0 var(--ink);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.9rem; cursor:pointer;
   }
 
   .summary{
@@ -111,11 +125,16 @@
   .summary .breakdown span.n{float:right; opacity:0.85;}
 
   .issue-btn{
-    width:100%; margin-top:16px; padding:16px; border:none;
-    border-radius:999px; background:var(--coral); color:var(--white);
-    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800; font-size:1.05rem;
-    cursor:pointer; box-shadow:0 10px 20px rgba(255,106,85,0.32);
+    display:flex; align-items:center; justify-content:center;
+    width:100%; margin-top:20px; padding:16px 20px;
+    border-radius:14px; border:3px solid var(--ink);
+    background:linear-gradient(135deg, var(--marigold), var(--coral));
+    color:var(--ink); box-shadow:5px 5px 0 var(--ink);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.05rem; letter-spacing:0.02em;
+    cursor:pointer;
+    transition:transform .08s, box-shadow .08s;
   }
+  .issue-btn:active{transform:translate(3px,3px); box-shadow:2px 2px 0 var(--ink);}
   .issue-btn:disabled{opacity:0.5;}
 
   .qr-box{text-align:center; margin-top:14px;}
@@ -123,7 +142,7 @@
   .qr-box .qr-area svg, .qr-box .qr-area canvas, .qr-box .qr-area img{margin:0 auto;}
   .qr-note{margin-top:10px; font-size:0.82rem; color:var(--ink-soft); line-height:1.7;}
   .edit-again{
-    margin-top:14px; background:none; border:none; color:var(--teal);
+    margin-top:14px; background:none; border:none; color:var(--teal-deep);
     font-weight:700; font-size:0.85rem; cursor:pointer;
   }
 
@@ -135,12 +154,12 @@
   .group-item .gname{font-weight:700; font-size:0.9rem;}
   .group-item .gmembers{font-size:0.76rem; color:var(--ink-soft);}
   .group-item button{
-    background:none; border:none; color:var(--teal); font-size:0.78rem; font-weight:700; cursor:pointer;
+    background:none; border:none; color:var(--teal-deep); font-size:0.78rem; font-weight:700; cursor:pointer;
   }
 
   .error{margin-top:10px;color:var(--coral-deep);font-size:0.86rem;display:none;}
   .loading, .not-found{
-    background:var(--white); border-radius:20px; padding:32px 24px;
+    background:var(--white); border-radius:20px; padding:32px 24px; margin-top:18px;
     text-align:center; color:var(--ink-soft); line-height:1.8;
   }
   .not-found a{color:var(--coral-deep); font-weight:700;}
@@ -148,8 +167,11 @@
 </head>
 <body>
 
+<header class="site-header">
+  <a href="index.html"><img src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）"></a>
+</header>
+
 <div class="page">
-  <div class="brand">AIR TRICK<span>.</span></div>
 
   <div id="loading" class="loading">読み込み中…</div>
   <div class="not-found" id="notFound" style="display:none;">
@@ -173,7 +195,7 @@
         <input id="searchKana" type="text" placeholder="フリガナで検索">
         <input id="searchBirthdate" type="date" style="max-width:150px;">
       </div>
-      <button class="small" style="margin-top:8px; width:100%;" id="searchBtn">検索して追加</button>
+      <button class="small" style="margin-top:10px; width:100%;" id="searchBtn">検索して追加</button>
       <div class="search-result" id="searchResult"></div>
 
       <div class="new-person-form" id="newPersonForm">
@@ -209,7 +231,7 @@
     <div class="card">
       <h2>保存済みグループ</h2>
       <div id="groupList"></div>
-      <button class="small" id="saveGroupBtn" style="margin-top:10px;">今選んでいるメンバーをグループとして保存</button>
+      <button class="small" id="saveGroupBtn" style="margin-top:12px;">今選んでいるメンバーをグループとして保存</button>
     </div>
   </div>
 </div>
