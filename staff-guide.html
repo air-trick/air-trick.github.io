@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>スタッフ操作ガイド｜AIR TRICK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/page.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a class="back" href="#" id="backLink">← スタッフ画面へ戻る</a>
+  <img src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）">
+</header>
+
+<div class="wrap wide">
+  <h1 class="page-title">スタッフ操作ガイド</h1>
+  <p class="page-sub"><span class="nb">受付・チェックインの</span><span class="nb">対応マニュアルです</span></p>
+
+  <ul class="toc no-print">
+    <li><a href="#open">開店前</a></li>
+    <li><a href="#flow">受付の流れ</a></li>
+    <li><a href="#check">画面で確認すること</a></li>
+    <li><a href="#trouble">うまくいかないとき</a></li>
+    <li><a href="#stats">集計の見方</a></li>
+    <li><a href="#faq">よくある質問</a></li>
+  </ul>
+
+  <div class="card g-section" id="open">
+    <h2 class="g-title"><span class="tagc">1</span>開店前にやること</h2>
+    <ul class="g-list">
+      <li class="phrase">レジ横に「チェックインQR」の印刷物が置いてあるか確認します（汚れ・破れがあれば交換）。</li>
+      <li class="phrase">スタッフ画面（予備の読み取り画面）をブックマークから開いておきます。</li>
+      <li class="phrase">Airレジは、いつもどおりご用意ください。</li>
+    </ul>
+  </div>
+
+  <div class="card g-section" id="flow">
+    <h2 class="g-title"><span class="tagc">2</span>受付の流れ</h2>
+    <ol class="g-steps">
+      <li class="g-step"><span class="g-num">1</span><div><h3>お客様がチェックインする</h3><p class="phrase">お客様が自分のスマホで、レジ横のQRを読み取ります。スタッフの操作は不要です。</p></div></li>
+      <li class="g-step"><span class="g-num">2</span><div><h3>完了画面を見せてもらう</h3><p class="phrase">お客様に「チェックインの画面をお見せください」とお声がけし、画面を確認します（確認するポイントは次の項目）。</p></div></li>
+      <li class="g-step"><span class="g-num">3</span><div><h3>Airレジで会計する</h3><p class="phrase">画面に出ている年齢区分ごとの人数にあわせて、入場料をAirレジで会計します。初めての方がいる場合は、登録料（お一人500円）も一緒にいただきます。</p></div></li>
+    </ol>
+  </div>
+
+  <div class="card g-section" id="check">
+    <h2 class="g-title"><span class="tagc">3</span>完了画面で確認すること</h2>
+    <ul class="g-list">
+      <li class="phrase"><b>今日の日付</b>が表示されているか（前の日のスクリーンショットでないことの確認です）。</li>
+      <li class="phrase"><b>画像が動いている</b>か（くるくる回っていれば、本物の画面です）。</li>
+      <li class="phrase"><b>人数と年齢区分</b>が、実際に来た方と合っているか。</li>
+      <li class="phrase"><b>「初めての方がいます」</b>の表示があるか。ある場合は、登録料をお一人500円いただきます。</li>
+    </ul>
+    <div class="g-box warn phrase"><b>日付が違う・画像が止まっている場合</b>は、画面を撮った写真の可能性があります。お手数ですが、もう一度お客様のスマホでチェックインしてもらってください。</div>
+  </div>
+
+  <div class="card g-section" id="trouble">
+    <h2 class="g-title"><span class="tagc">4</span>うまくいかないとき</h2>
+    <p class="g-q"><span class="nb">お客様の画面に</span><span class="nb">QRコードが出ている</span></p>
+    <p class="g-a phrase">カメラが使えない、または位置情報が取れなかった場合の表示です。次の手順で読み取ります。</p>
+    <ol class="g-list">
+      <li class="phrase">スタッフ画面を開きます（読み取りの欄に、そのまま入力できる状態になっています）。</li>
+      <li class="phrase">バーコードリーダー（QRコード対応）で、お客様の画面のQRを読み取ります。</li>
+      <li class="phrase">結果が表示されたら、完了画面と同じように人数・年齢区分・初回の有無を確認します。</li>
+    </ol>
+    <p class="g-q">「4時間以内に記録済み」と出た</p>
+    <p class="g-a phrase">同じ方がすでにチェックイン済みです。来店回数は増えていないので、そのまま対応して問題ありません。</p>
+    <p class="g-q">「見つかりませんでした」と出た</p>
+    <p class="g-a phrase">QRが正しく読み取れていない可能性があります。もう一度読み取ってください。続く場合は、管理者に連絡してください。</p>
+  </div>
+
+  <div class="card g-section" id="stats">
+    <h2 class="g-title"><span class="tagc">5</span>集計の見方</h2>
+    <p class="g-a phrase">スタッフ画面の「集計を見る」から開きます。期間（今日・昨日・過去7日・今月・先月・任意の期間）を選ぶと、次の内容が表示されます。</p>
+    <ul class="g-list">
+      <li class="phrase">来店人数（のべ）と、初めての方の人数</li>
+      <li class="phrase">年齢区分ごとの人数・日ごとの来店人数</li>
+      <li class="phrase">曜日・時間帯ごとの混み具合</li>
+      <li class="phrase">チェックインの方法（お客様のスマホ／スタッフ画面）の割合</li>
+    </ul>
+    <p class="g-a phrase" style="margin-top:8px;">「CSVで保存」を押すと、日ごとの集計をExcelで開ける形で保存できます。</p>
+  </div>
+
+  <div class="card g-section" id="faq">
+    <h2 class="g-title"><span class="tagc">6</span>よくある質問</h2>
+    <p class="g-q">スマホを持っていないお客様は？</p>
+    <p class="g-a phrase">一緒に来た方のスマホで、まとめてチェックインできます。お子さまだけの場合は、保護者の方のマイページで登録・追加してください。</p>
+    <p class="g-q">まだ会員登録していないお客様は？</p>
+    <p class="g-a phrase">その場でスマホから登録できます（トップページの「はじめての方はこちら」）。ご家族の登録は、マイページの「未登録の方を新しく登録して追加」からも行えます。</p>
+    <p class="g-q"><span class="nb">入力した名前や</span><span class="nb"><span style="white-space:nowrap;">生年月日</span>を</span><span class="nb">間違えたと言われた</span></p>
+    <p class="g-a phrase">管理者に連絡してください。会員情報のシートから修正します。</p>
+    <p class="g-q"><span class="nb">チェックインQRが汚れた・</span><span class="nb">なくなった</span></p>
+    <p class="g-a phrase">管理者に連絡してください。印刷用のページから、同じQRをいつでも印刷し直せます。</p>
+    <p class="g-q">位置情報が取れないお客様が多い</p>
+    <p class="g-a phrase">店内で電波が弱いことがあります。その場合はQR表示での受付になりますが、問題ありません。続くようなら管理者にお知らせください。</p>
+  </div>
+</div>
+
+<script>
+  // スタッフ画面へ戻るリンクは、合言葉（?key=）を引き継ぐ
+  (function () {
+    var key = new URLSearchParams(window.location.search).get('key') || '';
+    document.getElementById('backLink').href = 'staff.html' + (key ? '?key=' + encodeURIComponent(key) : '');
+  })();
+</script>
+<script src="assets/phrase.js"></script>
+</body>
+</html>

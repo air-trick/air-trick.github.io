@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>AIR TRICK 集計画面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#182848; --ink-soft:#2b3b63;
+    --coral:#FF6A55; --coral-deep:#E5503C;
+    --teal:#2CB6AD; --teal-deep:#1f8f88; --marigold:#FFC24B;
+    --cloud:#FBFAF6; --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; min-height:100vh; background:#EAF4FB; font-family:"Noto Sans JP", sans-serif; color:var(--ink);}
+  body::before{
+    content:''; position:fixed; inset:0; z-index:-1;
+    background:linear-gradient(rgba(255,255,255,0.84), rgba(255,255,255,0.84)), url('assets/sky.jpg') center/cover no-repeat;
+  }
+  .site-header{
+    position:sticky; top:0; z-index:20; background:var(--white); padding:8px 16px;
+    box-shadow:0 2px 14px rgba(24,40,72,0.10); display:flex; align-items:center; justify-content:center; gap:12px;
+  }
+  .site-header img{display:block; height:48px; width:auto;}
+  .site-header .tag{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.78rem; background:var(--ink); color:var(--white); border-radius:999px; padding:4px 12px;}
+  .page{width:100%; max-width:760px; margin:0 auto; padding:8px 16px 60px;}
+  .nb{display:inline-block;}
+
+  .card{background:var(--white); border-radius:20px; padding:20px; margin-top:16px; box-shadow:0 12px 26px rgba(24,40,72,0.08);}
+  .card h2{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.98rem; margin:0 0 12px;}
+  .no-key{background:var(--white); border:2px solid var(--coral); border-radius:16px; margin-top:18px; padding:18px; text-align:center; font-size:0.9rem; line-height:1.8;}
+
+  .periods{display:flex; flex-wrap:wrap; gap:8px;}
+  .periods button{
+    padding:9px 14px; border-radius:999px; border:2px solid #E7E3D9; background:var(--white);
+    font-family:inherit; font-weight:700; font-size:0.84rem; color:var(--ink); cursor:pointer;
+  }
+  .periods button.active{border-color:var(--ink); background:var(--ink); color:var(--white);}
+  .custom{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:12px; font-size:0.84rem;}
+  .custom input{padding:9px 10px; border-radius:10px; border:2px solid #E7E3D9; font-size:0.9rem; font-family:inherit;}
+  .custom .go{
+    padding:9px 18px; border-radius:10px; border:2px solid var(--teal); background:var(--white); color:var(--teal-deep);
+    box-shadow:3px 3px 0 var(--teal); font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; cursor:pointer;
+  }
+  .range-label{margin-top:12px; font-size:0.84rem; color:var(--ink-soft);}
+
+  .cards{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; margin-top:16px;}
+  .stat{background:var(--white); border-radius:16px; padding:16px; box-shadow:0 8px 18px rgba(24,40,72,0.07); text-align:center;}
+  .stat .n{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.8rem; line-height:1.2;}
+  .stat .n small{font-size:0.9rem; font-weight:700; margin-left:2px;}
+  .stat .l{font-size:0.78rem; color:var(--ink-soft); margin-top:4px; line-height:1.5;}
+  .stat.accent .n{color:var(--coral-deep);}
+
+  .bar-row{display:flex; align-items:center; gap:10px; margin-top:10px; font-size:0.86rem;}
+  .bar-row .name{flex:none; width:6.2em; font-weight:700;}
+  .bar-row .track{flex:1; height:14px; background:#F1EEE6; border-radius:999px; overflow:hidden;}
+  .bar-row .fill{display:block; height:100%; border-radius:999px; min-width:2px;}
+  .bar-row .val{flex:none; width:6.5em; text-align:right; font-weight:700; white-space:nowrap;}
+
+  .chart-scroll{overflow-x:auto; padding-bottom:6px;}
+  .chart{display:flex; align-items:flex-end; gap:4px; height:150px; min-width:100%;}
+  .chart{justify-content:center;}
+  .chart .col{flex:1 0 14px; max-width:56px; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%;}
+  .chart .col .stack{width:100%; display:flex; flex-direction:column-reverse; border-radius:4px 4px 0 0; overflow:hidden;}
+  .chart .col .cnt{font-size:0.62rem; color:var(--ink-soft); margin-bottom:2px; line-height:1;}
+  .axis{display:flex; gap:4px; min-width:100%; margin-top:4px;}
+  .axis{justify-content:center;}
+  .axis span{flex:1 0 14px; max-width:56px; text-align:center; font-size:0.62rem; color:var(--ink-soft);}
+  .legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:0.76rem; color:var(--ink-soft);}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px;}
+
+  .csv{
+    display:block; width:100%; margin-top:16px; padding:13px; border-radius:12px; border:2px solid var(--ink);
+    background:var(--white); color:var(--ink); font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.9rem; cursor:pointer;
+  }
+  .note{font-size:0.78rem; color:var(--ink-soft); line-height:1.8; margin-top:14px;}
+  .status{margin-top:16px; text-align:center; font-size:0.9rem; color:var(--ink-soft);}
+  .error{margin-top:16px; background:#FFE5E0; border:2px solid var(--coral); border-radius:14px; padding:14px; font-size:0.88rem; display:none;}
+  a.back{display:block; text-align:center; margin-top:24px; font-weight:700; font-size:0.86rem; color:var(--teal-deep); text-decoration:none;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <img src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）">
+  <span class="tag">集計</span>
+</header>
+
+<div class="page">
+
+  <div id="noKeyView" class="no-key" style="display:none;">
+    URLに合言葉（?key=…）が付いていません。<br>正しいスタッフ用URLからアクセスしてください。
+  </div>
+
+  <div id="mainView" style="display:none;">
+    <div class="card">
+      <h2>集計する期間</h2>
+      <div class="periods" id="periods">
+        <button type="button" data-p="today">今日</button>
+        <button type="button" data-p="yesterday">昨日</button>
+        <button type="button" data-p="week">過去7日</button>
+        <button type="button" data-p="month">今月</button>
+        <button type="button" data-p="lastmonth">先月</button>
+        <button type="button" data-p="custom">期間を指定</button>
+      </div>
+      <div class="custom" id="customBox" style="display:none;">
+        <input type="date" id="fromInput"><span>から</span><input type="date" id="toInput"><button type="button" class="go" id="goBtn">集計する</button>
+      </div>
+      <div class="range-label" id="rangeLabel"></div>
+    </div>
+
+    <div class="status" id="status">読み込み中…</div>
+    <div class="error" id="errorBox"></div>
+
+    <div id="result" style="display:none;">
+      <div class="cards">
+        <div class="stat accent"><div class="n" id="sVisits">0<small>名</small></div><div class="l">来店人数（のべ）</div></div>
+        <div class="stat"><div class="n" id="sFirst">0<small>名</small></div><div class="l">うち初めての方</div></div>
+        <div class="stat"><div class="n" id="sUnique">0<small>名</small></div><div class="l"><span class="nb">来店した人数</span><span class="nb">（重複なし）</span></div></div>
+        <div class="stat"><div class="n" id="sNew">0<small>名</small></div><div class="l">新規の会員登録</div></div>
+      </div>
+
+      <div class="card">
+        <h2>年齢区分ごとの人数</h2>
+        <div id="catBars"></div>
+      </div>
+
+      <div class="card">
+        <h2>日ごとの来店人数</h2>
+        <div class="chart-scroll"><div class="chart" id="dayChart"></div><div class="axis" id="dayAxis"></div></div>
+        <div class="legend" id="dayLegend"></div>
+      </div>
+
+      <div class="card">
+        <h2>曜日ごとの来店人数</h2>
+        <div id="weekdayBars"></div>
+      </div>
+
+      <div class="card">
+        <h2>時間帯ごとの来店人数</h2>
+        <div id="hourBars"></div>
+      </div>
+
+      <div class="card">
+        <h2>チェックインの方法</h2>
+        <div id="methodBars"></div>
+        <p class="note"><span class="nb">「セルフ」は、お客様のスマホで</span><span class="nb">チェックインした人数、</span><span class="nb">「スタッフ」は、</span><span class="nb">スタッフ画面で読み取った人数です。</span></p>
+      </div>
+
+      <button type="button" class="csv" id="csvBtn">日ごとの集計をCSVで保存（Excel用）</button>
+      <p class="note" id="sinceNote"></p>
+      <p class="note" style="margin-top:6px;"><span class="nb">会員の数：</span><span class="nb" id="sMembers"></span></p>
+    </div>
+
+    <a class="back" id="backLink" href="staff.html">← スタッフ画面へ戻る</a>
+  </div>
+</div>
+
+<script>
+// GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
+const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
+
+const KEY = new URLSearchParams(window.location.search).get('key') || '';
+const CATS = ['未就学児', '小学生', '中学生以上'];
+const CAT_COLORS = { '未就学児': '#FFC24B', '小学生': '#2CB6AD', '中学生以上': '#FF6A55' };
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+const $ = function (id) { return document.getElementById(id); };
+
+let current = null; // 直近の集計結果
+let reqSeq = 0;
+
+if (!KEY) {
+  $('noKeyView').style.display = 'block';
+} else {
+  $('mainView').style.display = 'block';
+  $('backLink').href = 'staff.html?key=' + encodeURIComponent(KEY);
+  setupPeriods();
+  selectPeriod('today');
+}
+
+// ---------- 期間の指定 ----------
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+// 日本時間の「今日」（端末の時刻設定に左右されないよう、UTC+9 で求める）
+function todayJst() {
+  const t = new Date(Date.now() + 9 * 3600 * 1000);
+  return new Date(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate());
+}
+function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+
+function periodRange(p) {
+  const t = todayJst();
+  if (p === 'today') return [ymd(t), ymd(t)];
+  if (p === 'yesterday') { const y = addDays(t, -1); return [ymd(y), ymd(y)]; }
+  if (p === 'week') return [ymd(addDays(t, -6)), ymd(t)];
+  if (p === 'month') return [ymd(new Date(t.getFullYear(), t.getMonth(), 1)), ymd(t)];
+  if (p === 'lastmonth') {
+    const first = new Date(t.getFullYear(), t.getMonth() - 1, 1);
+    const last = new Date(t.getFullYear(), t.getMonth(), 0);
+    return [ymd(first), ymd(last)];
+  }
+  return null;
+}
+
+function setupPeriods() {
+  $('periods').addEventListener('click', function (e) {
+    const b = e.target.closest('button');
+    if (b) selectPeriod(b.dataset.p);
+  });
+  $('goBtn').addEventListener('click', function () {
+    const f = $('fromInput').value, t = $('toInput').value;
+    if (!f || !t) { showError('開始日と終了日を入力してください。'); return; }
+    if (f > t) { showError('開始日は終了日より前の日付にしてください。'); return; }
+    load(f, t);
+  });
+}
+
+function selectPeriod(p) {
+  document.querySelectorAll('#periods button').forEach(function (b) { b.classList.toggle('active', b.dataset.p === p); });
+  $('customBox').style.display = p === 'custom' ? 'flex' : 'none';
+  if (p === 'custom') {
+    const t = todayJst();
+    if (!$('fromInput').value) $('fromInput').value = ymd(addDays(t, -6));
+    if (!$('toInput').value) $('toInput').value = ymd(t);
+    return;
+  }
+  const r = periodRange(p);
+  load(r[0], r[1]);
+}
+
+// ---------- 読み込み ----------
+function showError(msg) {
+  const box = $('errorBox');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+function jpDate(s) {
+  const p = s.split('-');
+  return Number(p[0]) + '年' + Number(p[1]) + '月' + Number(p[2]) + '日';
+}
+
+function load(from, to) {
+  const seq = ++reqSeq;
+  $('errorBox').style.display = 'none';
+  $('result').style.display = 'none';
+  $('status').style.display = 'block';
+  $('status').textContent = '集計しています…';
+  $('rangeLabel').textContent = from === to ? jpDate(from) : jpDate(from) + ' 〜 ' + jpDate(to);
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'getStats', staffKey: KEY, payload: { from: from, to: to } })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (res) {
+      if (seq !== reqSeq) return; // 古い読み込みの結果は捨てる
+      if (!res.ok) throw new Error(res.error || '集計に失敗しました。');
+      current = res.result;
+      render(res.result);
+    })
+    .catch(function (err) {
+      if (seq !== reqSeq) return;
+      $('status').style.display = 'none';
+      showError(err.message || '集計に失敗しました。通信状況をご確認ください。');
+    });
+}
+
+// ---------- 表示 ----------
+function setNum(id, n) { $(id).innerHTML = n + '<small>名</small>'; }
+
+function barRow(name, value, max, color, valText) {
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  const pct = max > 0 ? Math.round(value / max * 100) : 0;
+  row.innerHTML = '<span class="name"></span><span class="track"><span class="fill"></span></span><span class="val"></span>';
+  row.querySelector('.name').textContent = name;
+  const fill = row.querySelector('.fill');
+  fill.style.width = pct + '%';
+  fill.style.background = color;
+  row.querySelector('.val').textContent = valText;
+  return row;
+}
+
+function render(r) {
+  const t = r.totals;
+  $('status').style.display = 'none';
+  $('result').style.display = 'block';
+
+  setNum('sVisits', t.visits);
+  setNum('sFirst', t.first);
+  setNum('sUnique', t.uniqueVisitors);
+  setNum('sNew', r.newMembers);
+
+  // 年齢区分
+  const cat = $('catBars'); cat.innerHTML = '';
+  const catMax = Math.max.apply(null, CATS.map(function (c) { return t.byCategory[c] || 0; }).concat([1]));
+  CATS.forEach(function (c) {
+    const v = t.byCategory[c] || 0;
+    const pct = t.visits > 0 ? Math.round(v / t.visits * 100) : 0;
+    cat.appendChild(barRow(c, v, catMax, CAT_COLORS[c], v + '名（' + pct + '%）'));
+  });
+
+  // 日ごと
+  renderDays(r.days);
+
+  // 曜日
+  const wd = $('weekdayBars'); wd.innerHTML = '';
+  const wdMax = Math.max.apply(null, t.byWeekday.concat([1]));
+  WEEKDAYS.forEach(function (w, i) { wd.appendChild(barRow(w + '曜日', t.byWeekday[i], wdMax, i === 0 ? '#FF6A55' : i === 6 ? '#2CB6AD' : '#182848', t.byWeekday[i] + '名')); });
+
+  // 時間帯（来店のあった時間帯だけ表示）
+  const hr = $('hourBars'); hr.innerHTML = '';
+  const hours = Object.keys(t.byHour).map(Number).sort(function (a, b) { return a - b; });
+  if (hours.length === 0) {
+    hr.innerHTML = '<p class="note" style="margin:0;">この期間の来店記録はありません。</p>';
+  } else {
+    const hMax = Math.max.apply(null, hours.map(function (h) { return t.byHour[h]; }));
+    for (let h = hours[0]; h <= hours[hours.length - 1]; h++) {
+      const v = t.byHour[h] || 0;
+      hr.appendChild(barRow(h + '時台', v, hMax, '#182848', v + '名'));
+    }
+  }
+
+  // 方法
+  const me = $('methodBars'); me.innerHTML = '';
+  const methods = Object.keys(t.byMethod);
+  if (methods.length === 0) {
+    me.innerHTML = '<p class="note" style="margin:0;">この期間の来店記録はありません。</p>';
+  } else {
+    const mMax = Math.max.apply(null, methods.map(function (k) { return t.byMethod[k]; }));
+    methods.forEach(function (k) {
+      const v = t.byMethod[k];
+      const pct = t.visits > 0 ? Math.round(v / t.visits * 100) : 0;
+      me.appendChild(barRow(k, v, mMax, k === 'セルフ' ? '#2CB6AD' : '#FFC24B', v + '名（' + pct + '%）'));
+    });
+  }
+
+  $('sMembers').textContent = '現在 ' + r.totalMembers + '名';
+  setPhrases($('sinceNote'), r.firstRecordedDate
+    ? '※来店の集計は、/' + jpDate(r.firstRecordedDate) + ' 以降の記録が/もとになっています。'
+    : '※まだ来店の記録がありません。/チェックインが行われると、/ここに集計されます。');
+}
+
+// 「/」は、改行してよい文節の区切り（読みやすい位置で折り返すための目印。画面には出ない）
+function setPhrases(el, text) {
+  el.textContent = '';
+  text.split('/').forEach(function (s) {
+    const sp = document.createElement('span');
+    sp.className = 'nb';
+    sp.textContent = s;
+    el.appendChild(sp);
+  });
+}
+
+function renderDays(days) {
+  const chart = $('dayChart'), axis = $('dayAxis');
+  chart.innerHTML = ''; axis.innerHTML = '';
+  const max = Math.max.apply(null, days.map(function (d) { return d.total; }).concat([1]));
+  const H = 118; // 棒の最大の高さ(px)
+  days.forEach(function (d, i) {
+    const col = document.createElement('div');
+    col.className = 'col';
+    const cnt = document.createElement('div');
+    cnt.className = 'cnt';
+    cnt.textContent = d.total > 0 ? d.total : '';
+    const stack = document.createElement('div');
+    stack.className = 'stack';
+    stack.style.height = Math.round(d.total / max * H) + 'px';
+    CATS.forEach(function (c) {
+      const v = d.cats[c] || 0;
+      if (!v) return;
+      const seg = document.createElement('div');
+      seg.style.height = (v / d.total * 100) + '%';
+      seg.style.background = CAT_COLORS[c];
+      stack.appendChild(seg);
+    });
+    col.title = d.date + '：' + d.total + '名';
+    col.appendChild(cnt);
+    col.appendChild(stack);
+    chart.appendChild(col);
+
+    const lab = document.createElement('span');
+    const dd = d.date.split('-');
+    // 日付ラベルは混み合わないよう、期間が長いときは間引く
+    const step = days.length > 45 ? 7 : days.length > 20 ? 3 : 1;
+    lab.textContent = (i % step === 0 || days.length === 1) ? Number(dd[2]) : '';
+    axis.appendChild(lab);
+  });
+  if (days.length * 18 > 300) { chart.style.minWidth = days.length * 18 + 'px'; axis.style.minWidth = days.length * 18 + 'px'; }
+  else { chart.style.minWidth = '100%'; axis.style.minWidth = '100%'; }
+
+  const lg = $('dayLegend'); lg.innerHTML = '';
+  CATS.forEach(function (c) {
+    const s = document.createElement('span');
+    s.innerHTML = '<i style="background:' + CAT_COLORS[c] + ';"></i>';
+    s.appendChild(document.createTextNode(c));
+    lg.appendChild(s);
+  });
+}
+
+// ---------- CSV（日ごとの集計） ----------
+$('csvBtn').addEventListener('click', function () {
+  if (!current) return;
+  const lines = [['日付', '来店人数', 'うち初めての方'].concat(CATS).join(',')];
+  current.days.forEach(function (d) {
+    lines.push([d.date, d.total, d.first].concat(CATS.map(function (c) { return d.cats[c] || 0; })).join(','));
+  });
+  // Excelで文字化けしないよう、BOM付きUTF-8で保存する
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '来店集計_' + current.from + '_' + current.to + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+</script>
+
+</body>
+</html>
