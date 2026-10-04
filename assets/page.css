@@ -1,0 +1,73 @@
+:root{
+  --ink:#182848; --ink-soft:#2b3b63;
+  --coral:#FF6A55; --coral-deep:#E5503C;
+  --teal:#2CB6AD; --teal-deep:#1f8f88; --marigold:#FFC24B;
+  --cloud:#FBFAF6; --white:#FFFFFF;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--cloud); font-family:"Noto Sans JP", sans-serif; color:var(--ink);}
+a{text-decoration:none;}
+
+.site-header{
+  position:sticky; top:0; z-index:20; background:var(--white);
+  padding:10px 20px; display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 2px 14px rgba(24,40,72,0.10);
+}
+.site-header .back{font-weight:800; font-size:0.85rem; color:var(--ink-soft);}
+.site-header img{display:block; height:44px; width:auto;}
+
+.wrap{max-width:680px; margin:0 auto; padding:40px 20px 90px;}
+.wrap.wide{max-width:720px;}
+h1.page-title{
+  font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.6rem;
+  text-align:center; margin:0 0 8px; color:var(--ink);
+}
+.page-sub{text-align:center; color:var(--ink-soft); font-size:0.84rem; margin:0 0 32px; line-height:1.8;}
+.nb{display:inline-block;}
+
+.card{
+  background:var(--white); border-radius:20px; padding:24px 22px;
+  box-shadow:0 10px 24px rgba(24,40,72,0.08); margin-bottom:20px;
+}
+.card h2{margin:0 0 8px; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800; font-size:1.02rem;}
+.card p{margin:0 0 6px; font-size:0.9rem; line-height:1.9; color:var(--ink-soft);}
+
+.btn-badge{
+  display:inline-block; padding:14px 32px; border-radius:14px;
+  background:linear-gradient(135deg, var(--marigold), var(--coral));
+  border:3px solid var(--ink); box-shadow:5px 5px 0 var(--ink); color:var(--ink);
+  font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.98rem;
+}
+.center{text-align:center;}
+
+/* 料金ページ */
+.row{display:flex; justify-content:space-between; align-items:baseline; gap:12px;}
+.price-card{background:var(--white); border-radius:20px; overflow:hidden; box-shadow:0 10px 24px rgba(24,40,72,0.08); margin-bottom:22px;}
+.price-head{padding:14px 20px; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.05rem;}
+.price-body{padding:20px;}
+.price-main{padding:8px 0; font-weight:700; font-size:0.96rem;}
+.price-main + .price-main{border-top:1px solid #F1EEE6;}
+.price-sub-title{margin-top:18px; font-weight:800; font-size:0.86rem; color:var(--ink-soft);}
+.price-sub{padding:6px 0; font-size:0.88rem;}
+.price-note{margin:14px 0 0; font-size:0.76rem; color:var(--ink-soft); line-height:1.7;}
+
+/* 営業時間ページ */
+.hoursLine{display:flex; justify-content:space-between; gap:12px; font-size:0.96rem; padding:10px 0; border-bottom:1px solid #F1EEE6;}
+.hoursLine:last-of-type{border-bottom:none;}
+.infoLine{display:flex; justify-content:space-between; gap:12px; font-size:0.88rem; padding:5px 0;}
+.hoursLine > span:first-child, .infoLine > span:first-child{flex:none;}
+.hoursLine > span:last-child, .infoLine > span:last-child{text-align:right;}
+.hoursLine > span:last-child{white-space:nowrap;}
+.btn-mini{white-space:nowrap;}
+@media (max-width:360px){ .btn-mini{font-size:0.78rem !important; gap:4px !important; padding:12px 4px !important;} }
+
+/* アクセスページ */
+.info-row{display:flex; gap:14px; align-items:flex-start; padding:14px 0; border-bottom:1px solid #F1EEE6;}
+.info-row:last-child{border-bottom:none;}
+.info-ico{
+  flex:none; width:36px; height:36px; border-radius:10px; background:var(--cloud);
+  display:flex; align-items:center; justify-content:center;
+}
+.info-label{font-weight:800; font-size:0.82rem; color:var(--ink-soft); margin-bottom:4px;}
+.info-value{font-size:0.98rem; font-weight:700; line-height:1.7;}
+.info-note{font-size:0.84rem; color:var(--ink-soft); margin-top:4px; line-height:1.7;}
