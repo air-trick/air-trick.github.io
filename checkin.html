@@ -17,6 +17,7 @@
   .site-header img{display:block; height:48px; width:auto; margin:0 auto;}
   .page{width:100%; max-width:480px; margin:0 auto; padding:8px 16px 60px;}
   .card{background:var(--white); border-radius:20px; padding:28px 22px; margin-top:18px; box-shadow:0 12px 26px rgba(24,40,72,0.08); text-align:center; line-height:1.9;}
+  .nb{display:inline-block;}
   .card h1{font-family:"M PLUS Rounded 1c", sans-serif; font-size:1.1rem; margin:0 0 10px;}
   .btn{
     display:block; margin-top:18px; padding:14px 18px; border-radius:14px; border:3px solid var(--ink);
@@ -53,7 +54,7 @@
   }
 
   if (!key) {
-    box.innerHTML = '<h1>チェックイン</h1><p>お店のチェックインQRを読み取ってください。</p>' +
+    box.innerHTML = '<h1>チェックイン</h1><p><span class="nb">お店のチェックインQRを</span><span class="nb">読み取ってください。</span></p>' +
       '<a class="btn" href="login.html">会員の方はこちら</a>';
     return;
   }

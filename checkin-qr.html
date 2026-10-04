@@ -16,13 +16,24 @@
   h1{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:2rem; margin:6px 0 4px;}
   .lead{font-size:1.05rem; font-weight:700; color:var(--ink-soft); margin:0 0 18px;}
   #qr{display:inline-block; padding:14px; border:6px solid var(--marigold); border-radius:20px;}
-  #qr img, #qr canvas{display:block;}
-  .steps{text-align:left; display:inline-block; margin:22px auto 0; font-size:1.05rem; line-height:2; font-weight:700;}
-  .steps small{display:block; font-weight:400; font-size:0.85rem; color:var(--ink-soft); line-height:1.7;}
+  #qr{max-width:100%;}
+  #qr img, #qr canvas{display:block; max-width:100%; height:auto;}
+  .nb{display:inline-block;}
+  .steps{list-style:none; margin:24px auto 0; padding:0; max-width:500px; text-align:left; font-size:1rem; line-height:1.7; font-weight:700;}
+  .steps li{display:flex; align-items:flex-start; gap:12px; margin-bottom:12px;}
+  .steps li b{
+    flex:none; width:30px; height:30px; border-radius:50%; background:var(--marigold); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; font-size:0.95rem; margin-top:1px;
+  }
+  .note{margin:14px 0 0; font-size:0.9rem; color:var(--ink-soft); line-height:1.7;}
   .tools{max-width:560px; margin:14px auto; padding:0 16px;}
   .tools button{padding:12px 28px; border-radius:12px; border:3px solid var(--ink); background:var(--marigold); font-weight:900; font-size:1rem; cursor:pointer;}
   .warn{color:#E5503C; font-weight:700; margin:20px;}
-  @media print{ body{background:#fff;} .tools{display:none;} .sheet{max-width:none;} }
+  @media (max-width:360px){ .sheet{padding:24px 16px 30px;} .steps{font-size:0.9rem;} }
+  @media print{
+    body{background:#fff;} .tools{display:none;} .sheet{max-width:none; padding-top:10mm;}
+    #qr img{width:420px; height:420px; max-width:none;}
+  }
 </style>
 </head>
 <body>
@@ -32,15 +43,15 @@
 <div class="sheet" id="sheet">
   <img class="logo" src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）">
   <h1>チェックインQR</h1>
-  <p class="lead">ご来店のたびに、スマホで読み取ってください</p>
+  <p class="lead"><span class="nb">ご来店のたびに、</span><span class="nb">スマホで読み取ってください</span></p>
   <div id="qr"></div>
-  <div><div class="steps">
-    ① 会員のマイページを開く<br>
-    ② 今日遊ぶ人を選ぶ<br>
-    ③ 「チェックインQRを読み取る」を押して、このQRを写す<br>
-    ④ 表示された画面をスタッフにお見せください
-    <small>はじめての方は、先に会員登録をお願いします。</small>
-  </div></div>
+  <ol class="steps">
+    <li><b>1</b><span><span class="nb">会員のマイページを</span><span class="nb">開く</span></span></li>
+    <li><b>2</b><span><span class="nb">今日遊ぶ人を</span><span class="nb">選ぶ</span></span></li>
+    <li><b>3</b><span><span class="nb">「チェックインQRを読み取る」を</span><span class="nb">押して、</span><span class="nb">このQRを写す</span></span></li>
+    <li><b>4</b><span><span class="nb">表示された画面を</span><span class="nb">スタッフにお見せください</span></span></li>
+  </ol>
+  <p class="note"><span class="nb">はじめての方は、</span><span class="nb">先に会員登録をお願いします。</span></p>
 </div>
 
 <p class="warn" id="noKey" style="display:none;">URLに合言葉（?s=…）が付いていません。正しいURLからアクセスしてください。</p>

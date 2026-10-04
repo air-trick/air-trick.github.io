@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プライバシーポリシー｜トランポリンパーク AIR TRICK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/page.css">
+<style>
+  .policy h2{margin:28px 0 8px; font-size:1rem;}
+  .policy h2:first-of-type{margin-top:6px;}
+  .policy p{font-size:0.9rem; line-height:1.9; color:var(--ink-soft); margin:0 0 6px;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="back" href="index.html">← トップへ戻る</a>
+  <a href="index.html"><img src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）"></a>
+</header>
+
+<div class="wrap">
+  <h1 class="page-title" style="font-size:1.5rem;">プライバシーポリシー</h1>
+  <p class="page-sub" style="margin-bottom:28px;">個人情報の取り扱いについて</p>
+
+  <div class="card policy" style="padding:28px 24px;">
+    <p>トランポリンパーク AIR TRICK（以下「当施設」）は、お客様からお預かりする個人情報を適切に取り扱うため、以下のとおり方針を定めます。</p>
+
+    <h2>1. 取得する情報</h2>
+    <p>会員登録の際、代表者様およびご同行者様の氏名・フリガナ・生年月日・電話番号をお預かりします。</p>
+
+    <h2>2. 利用目的</h2>
+    <p>お預かりした情報は、以下の目的にのみ利用します。</p>
+    <p>・会員登録およびご本人確認<br>・ご来店時の受付、入場管理<br>・来店履歴の管理<br>・必要な場合のご連絡</p>
+
+    <h2>3. 位置情報の利用</h2>
+    <p>ご来店時のチェックインの際、お店の近くにいらっしゃるかを確認するためにスマートフォンの位置情報を一時的に利用します。位置情報は保存せず、この確認のためだけに使用します。</p>
+
+    <h2>4. 第三者提供について</h2>
+    <p>法令に基づく場合を除き、ご本人の同意なく第三者へ提供することはありません。</p>
+
+    <h2>5. 安全管理</h2>
+    <p>お預かりした情報は、適切なアクセス制限のもとで管理し、不正アクセスや漏えいの防止に努めます。</p>
+
+    <h2>6. 開示・訂正・削除等のご請求</h2>
+    <p>ご自身の情報の開示・訂正・削除をご希望の場合は、下記お問い合わせ窓口までご連絡ください。確認のうえ、速やかに対応いたします。</p>
+
+    <h2>7. お問い合わせ窓口</h2>
+    <p>トランポリンパーク AIR TRICK<br>電話：070-2036-4175</p>
+
+    <h2>8. 改定について</h2>
+    <p>本方針は、必要に応じて内容を見直すことがあります。重要な変更がある場合は、当サイト上でお知らせします。</p>
+
+    <p style="margin-top:24px; font-size:0.8rem;">制定日：2026年10月（仮）</p>
+  </div>
+</div>
+
+<!-- 長い文章を、読みやすい位置（文節）で折り返す（読み込めなくても表示は崩れない） -->
+<script src="https://cdn.jsdelivr.net/npm/budoux@0.7.0/bundle/budoux-ja.min.js"></script>
+<script>
+  document.querySelectorAll('.policy p, .policy h2').forEach(function (el) {
+    var w = document.createElement('budoux-ja');
+    while (el.firstChild) w.appendChild(el.firstChild);
+    el.appendChild(w);
+  });
+</script>
+
+</body>
+</html>

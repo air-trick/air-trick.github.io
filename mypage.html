@@ -146,6 +146,8 @@
     margin-top:16px; background:#FFF3CD; color:#633806; border-radius:12px;
     padding:10px 14px; font-size:0.84rem; line-height:1.7; display:none;
   }
+  .nb{display:inline-block;}
+  @media (max-width:340px){ .issue-btn{font-size:0.92rem; padding:16px 8px;} }
   .qr-reason{font-size:0.84rem; color:var(--coral-deep); font-weight:700; line-height:1.7; margin-bottom:6px;}
 
   /* 全画面の重ね表示（読み取り中／確認中／チェックイン完了） */
@@ -278,12 +280,12 @@
       <div class="breakdown" id="summaryBreakdown"></div>
     </div>
 
-    <div class="pending-note" id="pendingNote">チェックインQRを読み取りました。入場者を選んだら、下の「チェックインする」を押してください。</div>
+    <div class="pending-note" id="pendingNote"><span class="nb">チェックインQRを読み取りました。</span><span class="nb">入場者を選んだら、</span><span class="nb">下の「チェックインする」を</span><span class="nb">押してください。</span></div>
     <button class="issue-btn" id="scanBtn">📷 チェックインQRを読み取る</button>
     <button class="fallback-link" id="fallbackLink">カメラが起動しない方はこちら</button>
 
     <div class="card qr-box" id="qrBox" style="display:none;">
-      <h2>スタッフにこの画面をご提示ください</h2>
+      <h2><span class="nb">スタッフに</span><span class="nb">この画面を</span><span class="nb">ご提示ください</span></h2>
       <div class="qr-reason" id="qrReason"></div>
       <div class="qr-area" id="qrArea"></div>
       <div class="qr-note" id="qrSummaryText"></div>
@@ -293,7 +295,7 @@
     <div class="card">
       <h2>保存済みグループ</h2>
       <div id="groupList"></div>
-      <button class="small" id="saveGroupBtn" style="margin-top:12px;">今選んでいるメンバーをグループとして保存</button>
+      <button class="small" id="saveGroupBtn" style="margin-top:12px; white-space:normal; line-height:1.5;"><span class="nb">今選んでいるメンバーを</span><span class="nb">グループとして保存</span></button>
     </div>
   </div>
 </div>
@@ -791,7 +793,7 @@ function showDone_(result) {
   const firstTimers = result.members.filter(function (m) { return m.isFirstVisit; });
   const firstBox = document.getElementById('doneFirst');
   if (firstTimers.length > 0) {
-    firstBox.textContent = '初めての方がいます（' + firstTimers.length + '名）。受付で登録料（お一人500円）をお支払いください。';
+    setPhrases_(firstBox, '初めての方がいます（' + firstTimers.length + '名）。/受付で登録料（お一人500円）を/お支払いください。');
     firstBox.style.display = 'block';
   } else {
     firstBox.style.display = 'none';
@@ -819,7 +821,7 @@ function showDone_(result) {
   const dups = result.members.filter(function (m) { return m.duplicate; });
   const dupBox = document.getElementById('doneDup');
   if (dups.length > 0) {
-    dupBox.textContent = '本日すでにチェックイン済みの方（来店回数は増えません）：' + dups.map(function (m) { return m.name; }).join('、');
+    setPhrases_(dupBox, '本日すでにチェックイン済みの方/（来店回数は増えません）：/' + dups.map(function (m) { return m.name; }).join('、/'));
     dupBox.style.display = 'block';
   } else {
     dupBox.style.display = 'none';
@@ -841,18 +843,30 @@ document.getElementById('doneClose').addEventListener('click', function () {
 });
 
 // ---------- スタッフに読み取ってもらう（予備）----------
+// 「/」は、改行してよい文節の区切り（読みやすい位置で折り返すための目印。画面には出ない）
 const REASONS = {
-  camera: 'カメラを起動できませんでした。この画面をスタッフにお見せください。（スマホ標準のカメラアプリでレジ横のQRを読み取る方法もあります）',
-  location: '位置情報を確認できませんでした。この画面をスタッフにお見せください。',
-  far: 'お店から離れた場所と判定されました。ご来店中の場合は、この画面をスタッフにお見せください。',
+  camera: 'カメラを起動できませんでした。/この画面を/スタッフにお見せください。/（スマホ標準のカメラアプリで/レジ横のQRを読み取る方法もあります）',
+  location: '位置情報を確認できませんでした。/この画面を/スタッフにお見せください。',
+  far: 'お店から離れた場所と判定されました。/ご来店中の場合は、/この画面を/スタッフにお見せください。',
   '': ''
 };
+
+function setPhrases_(el, text) {
+  el.textContent = '';
+  String(text).split('/').forEach(function (s) {
+    if (!s) return;
+    const sp = document.createElement('span');
+    sp.className = 'nb';
+    sp.textContent = s;
+    el.appendChild(sp);
+  });
+}
 
 function showFallbackQr_(reason) {
   const ids = checkedEntrantIds_();
   if (ids.length === 0) return;
 
-  document.getElementById('qrReason').textContent = REASONS[reason] || '';
+  setPhrases_(document.getElementById('qrReason'), REASONS[reason] || '');
 
   el.qrArea.innerHTML = '';
   new QRCode(el.qrArea, {
@@ -950,5 +964,6 @@ function escapeHtml(str) {
 }
 </script>
 
+<script src="assets/phrase.js"></script>
 </body>
 </html>

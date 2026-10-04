@@ -3,123 +3,446 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIR TRICK</title>
+<title>トランポリンパーク AIR TRICK（エアトリ）</title>
+<meta name="description" content="山口県山口市小郡のトランポリンパーク AIR TRICK。料金・営業時間・アクセス、会員登録とマイページはこちら。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/page.css">
 <style>
-  :root{
-    --ink:#182848; --ink-soft:#2b3b63;
-    --coral:#FF6A55; --coral-deep:#E5503C;
-    --teal:#2CB6AD; --marigold:#FFC24B;
-    --cloud:#FBFAF6; --white:#FFFFFF;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--cloud);
-    font-family:"Noto Sans JP", sans-serif;
-    color:var(--ink);
-  }
-  .hero{
-    padding:56px 16px 64px;
-    text-align:center;
-    background:
-      radial-gradient(120% 90% at 85% 0%, rgba(255,194,75,0.30), transparent 55%),
-      radial-gradient(120% 90% at 10% 100%, rgba(44,182,173,0.25), transparent 55%),
-      var(--cloud);
-  }
-  .brand{
-    font-family:"M PLUS Rounded 1c", sans-serif;
-    font-weight:900; font-size:2rem;
-  }
-  .brand span{color:var(--coral-deep);}
-  .catch{
-    margin:10px auto 0; max-width:420px;
-    font-size:1rem; color:var(--ink-soft); line-height:1.8;
-  }
-  .cta-row{
-    display:flex; flex-direction:column; gap:12px; align-items:center;
-    margin-top:28px;
-  }
-  .cta{
-    display:inline-block; width:100%; max-width:280px; padding:16px 40px;
-    border-radius:999px; text-decoration:none;
-    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800; font-size:1.05rem;
-  }
-  .cta.primary{
-    background:var(--coral); color:var(--white);
-    box-shadow:0 10px 20px rgba(255,106,85,0.32);
-  }
-  .cta.secondary{
-    background:var(--white); color:var(--teal); border:2px solid var(--teal);
-  }
-  .section{
-    max-width:560px; margin:0 auto; padding:40px 20px;
-  }
-  .section h2{
-    font-family:"M PLUS Rounded 1c", sans-serif;
-    font-size:1.1rem; text-align:center; margin:0 0 28px;
-  }
-  .steps{display:flex; flex-direction:column; gap:16px;}
-  .step{
-    background:var(--white); border-radius:18px; padding:20px;
-    box-shadow:0 10px 24px rgba(24,40,72,0.08);
-    display:flex; gap:16px; align-items:flex-start;
-  }
-  .step .num{
-    flex:none; width:36px; height:36px; border-radius:50%;
-    background:var(--teal); color:var(--white);
-    display:flex; align-items:center; justify-content:center;
-    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:800;
-  }
-  .step .body h3{margin:0 0 4px; font-size:0.98rem;}
-  .step .body p{margin:0; font-size:0.85rem; color:var(--ink-soft); line-height:1.7;}
+  body{overflow-x:hidden; padding-top:64px;}
+  button{font-family:inherit;}
 
-  footer{
-    text-align:center; padding:24px; font-size:0.75rem; color:var(--ink-soft);
+  /* 固定ヘッダー */
+  .top-header{
+    position:fixed; top:0; left:0; right:0; z-index:100; height:64px;
+    display:flex; align-items:center; justify-content:space-between; padding:0 20px;
+    background:var(--white); box-shadow:0 2px 14px rgba(24,40,72,0.10);
   }
+  .top-header img{height:46px; width:auto; display:block;}
+  .menu-btn{
+    width:44px; height:44px; border-radius:12px; border:none; background:transparent;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer;
+  }
+  .menu-btn span{width:22px; height:2px; background:var(--ink); border-radius:2px; transition:transform .25s ease, opacity .25s ease;}
+  .menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .menu-btn.open span:nth-child(2){opacity:0;}
+  .menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+  .menu-panel{
+    display:none; position:fixed; top:64px; left:0; right:0; z-index:99; background:var(--white);
+    box-shadow:0 18px 30px rgba(24,40,72,0.14); padding:10px 20px 22px; max-height:calc(100vh - 64px); overflow-y:auto;
+  }
+  .menu-panel.open{display:block;}
+  .menu-panel a{display:block; padding:14px 6px; font-weight:700; font-size:0.98rem; color:var(--ink); border-bottom:1px solid #F1EEE6;}
+  .menu-panel a:last-child{border-bottom:none;}
+
+  /* ヒーロー */
+  .hero{
+    position:relative; overflow:hidden; padding:48px 24px 90px;
+    background:url('assets/hero-bg.jpg') center/cover no-repeat #3b8be6;
+  }
+  .hero-logo{position:relative; z-index:1; width:100%; max-width:760px; margin:0 auto;}
+  .hero-logo img{display:block; width:100%; height:auto;}
+  .hero-btns{position:relative; z-index:1; display:flex; flex-direction:column; gap:14px; width:100%; max-width:320px; margin:6px auto 0;}
+  .hero-btn{
+    display:flex; flex-direction:column; align-items:center; width:100%; padding:14px 20px;
+    border-radius:14px; border:3px solid var(--ink); color:var(--ink);
+  }
+  .hero-btn.primary{background:linear-gradient(135deg, var(--marigold), var(--coral)); box-shadow:5px 5px 0 var(--ink);}
+  .hero-btn.secondary{background:var(--ink); border-color:var(--marigold); box-shadow:5px 5px 0 var(--marigold); color:var(--white); padding:12px 20px;}
+  .hero-btn b{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.02rem; letter-spacing:0.02em;}
+  .hero-btn small{font-size:0.74rem; font-weight:800; opacity:0.85; margin-top:2px;}
+  .arrow{position:relative; z-index:1; text-align:center; margin-top:18px; color:var(--white); opacity:0.85; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3)); animation:gentleBounce 1.8s ease-in-out infinite;}
+  @keyframes gentleBounce{0%,100%{transform:translateY(0);} 50%{transform:translateY(10px);}}
+
+  /* 跳びはねる切り抜き */
+  .bounceKid{position:absolute; opacity:0; pointer-events:none; user-select:none; height:auto; filter:drop-shadow(0 8px 14px rgba(0,0,0,0.3)); will-change:transform, opacity;}
+  .bounceKidWrap{position:absolute; opacity:0; pointer-events:none; user-select:none; will-change:transform, opacity;}
+  .bounceKidWrap img{display:block; width:100%; height:auto; will-change:transform;}
+  @keyframes jumpVert{
+    0%   { transform: translate(0,160px) scale(0.92) rotate(0deg); opacity: 0; }
+    15%  { opacity: var(--op, 1); }
+    50%  { transform: translate(0, var(--peak, -50px)) scale(1) rotate(calc(var(--rot, 0deg) * 0.5)); opacity: var(--op, 1); }
+    85%  { opacity: var(--op, 1); }
+    100% { transform: translate(0,160px) scale(0.92) rotate(var(--rot, 0deg)); opacity: 0; }
+  }
+  @keyframes jumpArcRL{
+    0%   { transform: translate(0,0) scale(0.95) rotate(0deg); opacity: 0; }
+    15%  { opacity: var(--op, 1); }
+    50%  { transform: translate(var(--dx, -170px), var(--dy, -190px)) scale(1.05) rotate(calc(var(--rot, 0deg) * 0.5)); opacity: var(--op, 1); }
+    85%  { opacity: var(--op, 1); }
+    100% { transform: translate(calc(var(--dx, -170px) * 2), 0px) scale(0.95) rotate(var(--rot, 0deg)); opacity: 0; }
+  }
+  @keyframes jumpTriple{
+    0%   { transform: translate(0,0) scale(0.95) rotate(0deg); opacity: 0; }
+    6%   { opacity: var(--op, 1); }
+    18%  { transform: translate(calc(var(--x1, 60px) * 0.5), var(--p1, -50px)) scale(1) rotate(8deg); }
+    32%  { transform: translate(var(--x1, 60px), 0px) scale(0.96) rotate(-8deg); }
+    46%  { transform: translate(calc(var(--x1, 60px) + (var(--x2, 150px) - var(--x1, 60px)) * 0.5), var(--p2, -110px)) scale(1) rotate(9deg); }
+    62%  { transform: translate(var(--x2, 150px), 0px) scale(0.96) rotate(-9deg); }
+    84%  { transform: translate(var(--x3, 260px), var(--p3, -210px)) scale(1.05) rotate(7deg); opacity: var(--op, 1); }
+    100% { transform: translate(calc(var(--x3, 260px) + 25px), calc(var(--p3, -210px) - 35px)) scale(1.12) rotate(-5deg); opacity: 0; }
+  }
+  @keyframes flyLine{
+    0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+    8%   { opacity: var(--op, 1); }
+    92%  { opacity: var(--op, 1); }
+    100% { transform: translate3d(var(--dx, -600px), var(--dy, -400px), 0); opacity: 0; }
+  }
+  @keyframes spinX{
+    0%     { transform: scaleX(1); }
+    12.5%  { transform: scaleX(0.707); }
+    25%    { transform: scaleX(0); }
+    37.5%  { transform: scaleX(-0.707); }
+    50%    { transform: scaleX(-1); }
+    62.5%  { transform: scaleX(-0.707); }
+    75%    { transform: scaleX(0); }
+    87.5%  { transform: scaleX(0.707); }
+    100%   { transform: scaleX(1); }
+  }
+  @media (prefers-reduced-motion: reduce){ .bounceKid, .bounceKidWrap, .arrow{display:none;} }
+
+  /* SNS・電話 */
+  .contact{padding:28px 24px 8px; display:flex; flex-direction:column; align-items:center; gap:12px;}
+  .contact-row{display:flex; gap:12px; width:100%; max-width:380px;}
+  .contact a{
+    display:flex; align-items:center; justify-content:center; gap:7px; padding:13px 10px;
+    border-radius:14px; font-weight:800; font-size:0.82rem;
+  }
+  .contact-row a{flex:1; color:var(--white); box-shadow:0 6px 14px rgba(0,0,0,0.18); white-space:nowrap;}
+  @media (max-width:340px){ .contact a{font-size:0.76rem; gap:5px; padding:13px 6px;} .faq-a{padding-left:20px;} .faq-q{padding:16px 12px; gap:10px;} }
+  .contact .tel{width:100%; max-width:380px; gap:8px; background:var(--white); border:2px solid var(--ink); color:var(--ink); font-size:0.85rem;}
+
+  /* 案内カード */
+  .section{max-width:1120px; margin:0 auto; padding:24px 24px;}
+  .section-title{
+    text-align:center; margin:0 0 20px; font-family:"M PLUS Rounded 1c", sans-serif;
+    font-weight:900; font-size:1.5rem;
+  }
+  .guide{background:var(--ink); border-radius:20px; padding:26px 24px; text-align:center; max-width:640px; margin:16px auto 0;}
+  .guide h3{color:var(--white); font-weight:800; font-size:0.98rem; margin:0 0 4px;}
+  .guide p{color:rgba(255,255,255,0.75); font-size:0.82rem; margin:0 0 16px; line-height:1.7; text-wrap:balance;}
+  .guide a{
+    display:inline-block; padding:12px 28px; border-radius:14px; border:3px solid var(--ink);
+    box-shadow:4px 4px 0 rgba(0,0,0,0.3); font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.95rem;
+  }
+
+  /* ギャラリー */
+  .gallery{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:22px; margin-top:40px;}
+  .gallery figure{margin:0; border-radius:28px; overflow:hidden; box-shadow:0 16px 32px rgba(24,40,72,0.14); background:var(--white);}
+  .gallery img{width:100%; height:280px; object-fit:cover; display:block;}
+  .gallery figure:nth-child(1){transform:rotate(-2deg);}
+  .gallery figure:nth-child(2){transform:rotate(1.5deg);}
+  .gallery figure:nth-child(3){transform:rotate(-1.5deg);}
+  .gallery figure:nth-child(4){transform:rotate(2deg);}
+
+  /* よくある質問 */
+  .faq{background:var(--white); border-radius:20px; box-shadow:0 10px 24px rgba(24,40,72,0.08); overflow:hidden; max-width:720px; margin:0 auto;}
+  .faq-item{border-bottom:1px solid #F1EEE6;}
+  .faq-item:last-child{border-bottom:none;}
+  .faq-q{width:100%; text-align:left; background:none; border:none; padding:18px 20px; display:flex; align-items:center; gap:14px; cursor:pointer; color:var(--ink);}
+  .faq-q .q{flex:none; width:26px; height:26px; border-radius:50%; background:var(--coral); color:var(--white); font-weight:900; font-size:0.9rem; display:flex; align-items:center; justify-content:center;}
+  .faq-q .t{flex:1; font-weight:700; font-size:0.92rem; line-height:1.6;}
+  .faq-q .i{flex:none; font-weight:900; font-size:1.1rem; color:var(--ink-soft);}
+  .faq-a{display:none; padding:0 20px 20px 60px;}
+  .faq-a p{margin:0; font-size:0.88rem; color:var(--ink-soft); line-height:1.8; text-wrap:pretty;}
+  .faq-item.open .faq-a{display:block;}
+
+  /* 最後のご案内 */
+  .closing{background:var(--ink); color:var(--white); text-align:center; padding:72px 24px;}
+  .closing h2{margin:0 0 10px; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.4rem;}
+  .closing p{margin:0 auto 28px; font-size:0.9rem; opacity:0.75; line-height:1.8; max-width:420px; text-wrap:balance;}
+  .closing .btns{display:flex; flex-direction:column; gap:14px; width:100%; max-width:320px; margin:0 auto;}
+  .closing .btns a{display:flex; justify-content:center; padding:14px 20px; border-radius:14px; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.02rem;}
+  .closing .c1{background:linear-gradient(135deg, var(--marigold), var(--coral)); border:3px solid var(--white); box-shadow:5px 5px 0 rgba(255,255,255,0.3); color:var(--ink);}
+  .closing .c2{background:transparent; color:var(--white); border:3px solid var(--marigold); box-shadow:5px 5px 0 rgba(255,194,75,0.3);}
+
+  footer{background:#10203a; color:rgba(255,255,255,0.65); text-align:center; padding:28px 24px;}
+  footer .links{display:flex; flex-wrap:wrap; justify-content:center; gap:10px 18px; margin-bottom:14px; font-size:0.82rem;}
+  footer .links a{color:rgba(255,255,255,0.8); font-weight:700;}
+  footer .copy{font-size:0.74rem;}
+
+  .reveal{opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.is-visible{opacity:1; transform:translateY(0);}
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <div class="brand">AIR TRICK<span>.</span></div>
-  <p class="catch">トランポリンパーク AIR TRICK<br>会員登録はスマホから、その場で完結します。</p>
-  <div class="cta-row">
-    <a class="cta primary" href="register.html">はじめての方はこちら（新規会員登録）</a>
-    <a class="cta secondary" href="login.html">会員の方はこちら（ログイン）</a>
+<header class="top-header">
+  <a href="#hero"><img src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）"></a>
+  <button class="menu-btn" id="menuBtn" aria-label="メニューを開く" aria-expanded="false"><span></span><span></span><span></span></button>
+</header>
+
+<nav class="menu-panel" id="menuPanel">
+  <a href="#hero">トップ</a>
+  <a href="#info">料金・営業案内</a>
+  <a href="#gallery">フォトギャラリー</a>
+  <a href="#faq">よくある質問</a>
+  <a href="access.html">アクセス</a>
+  <a href="hours.html">営業時間</a>
+  <a href="https://airrsv.net/hoppinmashyamaguchi/calendar" target="_blank" rel="noopener" style="color:var(--teal-deep);">WEB予約（エアリザーブ）</a>
+  <a href="register.html" style="color:var(--coral-deep);">新規会員登録</a>
+  <a href="login.html" style="color:var(--teal-deep);">会員ログイン</a>
+</nav>
+
+<!-- ヒーロー -->
+<section class="hero" id="hero">
+  <div class="hero-logo"><img src="assets/hero-logo.png" alt="トランポリンパーク AIR TRICK（エアトリ）"></div>
+
+  <img class="bounceKid" id="kid" alt="">
+  <div class="bounceKidWrap" id="kidWrap"><img id="kidWrapImg" alt=""></div>
+
+  <div class="hero-btns">
+    <a class="hero-btn primary" href="register.html"><b>はじめての方はこちら</b><small>（新規会員登録）</small></a>
+    <a class="hero-btn secondary" href="login.html"><b>会員の方はこちら</b><small>（ログイン）</small></a>
   </div>
+  <div class="arrow" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+</section>
+
+<!-- Instagram・公式LINE・電話 -->
+<div class="contact">
+  <div class="contact-row">
+    <a href="https://www.instagram.com/hoppin_mush_yamaguchi" target="_blank" rel="noopener" aria-label="公式Instagram" style="background:linear-gradient(45deg, #f9ce34, #ee2a7b 55%, #6228d7);">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="white" stroke="none"/></svg>
+      公式Instagram
+    </a>
+    <a href="https://line.ee/y4RgcC6d" target="_blank" rel="noopener" aria-label="公式LINE" style="background:#06C755;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M12 2C6.48 2 2 5.69 2 10.2c0 4.02 3.52 7.39 8.28 8.05.32.07.76.21.87.49.1.25.07.65.03.9l-.14.86c-.04.25-.2.99.86.54 1.06-.45 5.73-3.37 7.82-5.77C20.9 13.63 22 12.02 22 10.2 22 5.69 17.52 2 12 2Z"/></svg>
+      公式LINE
+    </a>
+  </div>
+  <a class="tel" href="tel:07020364175">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92Z"/></svg>
+    <span><span class="nb">電話をかける</span><span class="nb">（070-2036-4175）</span></span>
+  </a>
 </div>
 
-<div class="section">
-  <h2>ご利用の流れ</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="num">1</div>
-      <div class="body">
-        <h3>会員登録</h3>
-        <p>お名前・フリガナ・電話番号・生年月日を入力するだけ。同行者もまとめて登録できます。</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="num">2</div>
-      <div class="body">
-        <h3>マイページで今日の入場者を選ぶ</h3>
-        <p>来店時にマイページを開き、今日一緒に来る方を選んで入場QRを発行します。</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="num">3</div>
-      <div class="body">
-        <h3>QRコードをスタッフに提示</h3>
-        <p>発行されたQRコードをスタッフにご提示いただくだけで、人数分まとめて受付が完了します。</p>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- 料金・営業案内 -->
+<section class="section" id="info">
+  <h2 class="section-title reveal">料金・営業案内</h2>
 
-<footer>&copy; AIR TRICK</footer>
+  <div class="guide reveal" style="margin-top:0;">
+    <h3>入場料金のご案内</h3>
+    <p><span class="nb">通常・延長時間別の料金や、</span><span class="nb">家族割セット料金は</span><span class="nb">こちらのページで</span><span class="nb">ご確認いただけます。</span></p>
+    <a href="pricing.html" style="background:var(--marigold); color:var(--ink);">ご利用料金をみる</a>
+  </div>
+  <div class="guide reveal">
+    <h3>営業時間のご案内</h3>
+    <p><span class="nb">一般開放の時間帯や定休日、</span><span class="nb">トランポリン教室の</span><span class="nb">開催時間は</span><span class="nb">こちらからご確認いただけます。</span></p>
+    <a href="hours.html" style="background:var(--teal); color:var(--white);">営業時間をみる</a>
+  </div>
+  <div class="guide reveal">
+    <h3>アクセス</h3>
+    <p><span class="nb">住所・駐車場・</span><span class="nb">最寄り駅などの</span><span class="nb">ご案内は</span><span class="nb">こちらからご確認いただけます。</span></p>
+    <a href="access.html" style="background:var(--coral); color:var(--white);">アクセスをみる</a>
+  </div>
+</section>
+
+<!-- フォトギャラリー -->
+<section class="section" id="gallery" style="padding-top:48px;">
+  <h2 class="section-title reveal" style="margin-bottom:0;">フォトギャラリー</h2>
+  <div class="gallery">
+    <figure class="reveal"><img src="assets/gallery-1.jpg" alt="壁を駆け上がるジャンプ" loading="lazy"></figure>
+    <figure class="reveal"><img src="assets/gallery-2.jpg" alt="トランポリンで跳ぶ子供" loading="lazy"></figure>
+    <figure class="reveal"><img src="assets/gallery-3.jpg" alt="バウンスボードでのトリック" loading="lazy"></figure>
+    <figure class="reveal"><img src="assets/gallery-4.jpg" alt="バーを使った宙返り" loading="lazy"></figure>
+  </div>
+</section>
+
+<!-- よくある質問 -->
+<section class="section" id="faq" style="padding-bottom:72px;">
+  <h2 class="section-title reveal" style="margin-bottom:28px;">よくある質問</h2>
+  <div class="faq reveal" id="faqList"></div>
+</section>
+
+<!-- 最後のご案内 -->
+<section class="closing">
+  <h2 class="reveal">さあ、跳び込もう。</h2>
+  <p class="reveal"><span class="nb">登録はその場で1分。</span><span class="nb">次の来店からは</span><span class="nb">マイページひとつで</span><span class="nb">入場できます。</span></p>
+  <div class="btns reveal">
+    <a class="c1" href="register.html">新規会員登録はこちら</a>
+    <a class="c2" href="login.html">会員ログイン</a>
+  </div>
+</section>
+
+<footer>
+  <div class="links">
+    <a href="access.html">アクセス</a>
+    <a href="hours.html">営業時間</a>
+    <a href="pricing.html">ご利用料金</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+  </div>
+  <div class="copy">&copy; AIR TRICK</div>
+</footer>
+
+<script>
+(function () {
+  // ---------- メニュー ----------
+  var menuBtn = document.getElementById('menuBtn');
+  var menuPanel = document.getElementById('menuPanel');
+  function setMenu(open) {
+    menuBtn.classList.toggle('open', open);
+    menuPanel.classList.toggle('open', open);
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  menuBtn.addEventListener('click', function () { setMenu(!menuPanel.classList.contains('open')); });
+  menuPanel.addEventListener('click', function (e) { if (e.target.tagName === 'A') setMenu(false); });
+
+  // ---------- よくある質問 ----------
+  // 「/」は、改行してよい文節の区切り（読みやすい位置で折り返すための目印。画面には出ない）
+  var FAQ = [
+    { q: '年齢制限は/ありますか？', a: '年齢制限は/設けていませんが、/自分でバランスをとって/ジャンプができる/２～３歳以上が目安です。' },
+    { q: '大人が跳んでも/いいんですか？', a: 'もちろんです。/むしろ、/筋力のある大人の方が/反発を上手に使えるため、/大人向けのスポーツです。' },
+    { q: 'バク転・バク宙を/教えてもらえますか？', a: '可能です。/ただし、入場料と別に/レッスン料を/頂戴いたします。/また、混雑時は/お断りすることがあります。' },
+    { q: '予約が必要ですか？', a: '予約なしでも/ご利用可能ですが、/定員がありますので/WEBからのご予約を/おすすめしています。' },
+    { q: '現金のみですか？', a: '現金以外に、/クレジット・QRコード決済・/交通系電子マネーに/対応しております。' }
+  ];
+  function phrases(el, text) {
+    text.split('/').forEach(function (s) {
+      var sp = document.createElement('span');
+      sp.className = 'nb';
+      sp.textContent = s;
+      el.appendChild(sp);
+    });
+  }
+  var faqList = document.getElementById('faqList');
+  FAQ.forEach(function (item) {
+    var wrap = document.createElement('div');
+    wrap.className = 'faq-item';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'faq-q';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = '<span class="q">Q</span><span class="t"></span><span class="i">＋</span>';
+    phrases(btn.querySelector('.t'), item.q);
+    var ans = document.createElement('div');
+    ans.className = 'faq-a';
+    var p = document.createElement('p');
+    phrases(p, item.a);
+    ans.appendChild(p);
+    btn.addEventListener('click', function () {
+      var open = wrap.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.querySelector('.i').textContent = open ? '－' : '＋';
+    });
+    wrap.appendChild(btn);
+    wrap.appendChild(ans);
+    faqList.appendChild(wrap);
+  });
+
+  // ---------- ふわっと表示 ----------
+  var revealEls = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  }
+
+  // ---------- 跳びはねる切り抜き（常に1枚だけ。表示した時間と同じだけ休んでから再登場） ----------
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var kid = document.getElementById('kid');
+  var wrapEl = document.getElementById('kidWrap');
+  var wrapImg = document.getElementById('kidWrapImg');
+  var heroEl = document.getElementById('hero');
+
+  function rand(a, b) { return Math.random() * (b - a) + a; }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function px(v) { return Math.round(v) + 'px'; }
+
+  var IMAGES = [
+    { src: 'assets/anim_kid.png', wMul: 1 },
+    { src: 'assets/anim_snow.png', wMul: 1.25 }
+  ];
+  IMAGES.forEach(function (im) { var pre = new Image(); pre.src = im.src; if (pre.decode) pre.decode().catch(function () {}); });
+
+  var patterns = [
+    { // 1：左から垂直ジャンプ＋右に1回転
+      name: 'jumpVert', zone: function () { return { left: '8%', top: '60%' }; },
+      width: function () { return rand(130, 160); },
+      setVars: function (el) { el.style.setProperty('--peak', '-' + px(rand(140, 190))); el.style.setProperty('--rot', '360deg'); },
+      dur: function () { return rand(2.6, 3.4); }
+    },
+    { // 2：右から垂直ジャンプ（大きめ）＋左に2回転
+      name: 'jumpVert', zone: function () { return { left: '76%', top: '54%' }; },
+      width: function () { return rand(170, 210); },
+      setVars: function (el) { el.style.setProperty('--peak', '-' + px(rand(150, 200))); el.style.setProperty('--rot', '-720deg'); },
+      dur: function () { return rand(2.8, 3.6); }
+    },
+    { // 3：右下から左下へ放物線＋左に半回転
+      name: 'jumpArcRL', zone: function () { return { left: '88%', top: '66%' }; },
+      width: function () { return rand(190, 230); },
+      setVars: function (el) {
+        el.style.setProperty('--dx', '-' + px(rand(220, 300))); el.style.setProperty('--dy', '-' + px(rand(170, 220)));
+        el.style.setProperty('--rot', '-180deg');
+      },
+      dur: function () { return rand(3.0, 3.8); }
+    },
+    { // 4：左下から3連続ジャンプ（最後は頂点で消える）
+      name: 'jumpTriple', zone: function () { return { left: '4%', top: '70%' }; },
+      width: function () { return rand(130, 160); },
+      setVars: function (el) {
+        el.style.setProperty('--x1', px(rand(60, 90))); el.style.setProperty('--x2', px(rand(150, 190))); el.style.setProperty('--x3', px(rand(250, 300)));
+        el.style.setProperty('--p1', '-' + px(rand(40, 65))); el.style.setProperty('--p2', '-' + px(rand(100, 135))); el.style.setProperty('--p3', '-' + px(rand(190, 240)));
+      },
+      dur: function () { return rand(3.8, 4.8); }
+    },
+    { // 5：右下から左上へ一直線＋Y軸旋回（外側＝移動、内側＝反転旋回の2D構造）
+      useWrap: true, name: 'flyLine',
+      zone: function () {
+        var r = heroEl.getBoundingClientRect();
+        return { left: px(r.width * 0.84), top: px(r.height * 0.80), w: r.width, h: r.height };
+      },
+      width: function () { return rand(190, 250); },
+      setVars: function (el, z) { el.style.setProperty('--dx', '-' + px(z.w * 0.76)); el.style.setProperty('--dy', '-' + px(z.h * 0.72)); },
+      dur: function () { return rand(4.4, 5.4); }
+    }
+  ];
+
+  var timer = 0;
+  function launch() {
+    var pattern = pick(patterns);
+    var image = pick(IMAGES);
+    var zone = pattern.zone();
+    var target = pattern.useWrap ? wrapEl : kid;
+    var imgEl = pattern.useWrap ? wrapImg : kid;
+    var other = pattern.useWrap ? kid : wrapEl;
+    other.style.animation = 'none';
+    wrapImg.style.animation = 'none';
+
+    imgEl.src = image.src;
+    target.style.left = zone.left;
+    target.style.top = zone.top;
+    target.style.width = px(pattern.width() * image.wMul);
+    target.style.setProperty('--op', '1');
+    pattern.setVars(target, zone);
+
+    var dur = pattern.dur();
+    target.style.animation = 'none';
+    void target.offsetWidth;
+    target.style.animation = pattern.name + ' ' + dur.toFixed(2) + 's linear 1';
+    if (pattern.useWrap) {
+      var turns = pick([1, 2, 3]);
+      wrapImg.style.animation = 'spinX ' + (dur / turns).toFixed(3) + 's linear ' + turns;
+    }
+
+    function onDone(e) {
+      if (e.target !== target || e.animationName !== pattern.name) return;
+      target.removeEventListener('animationend', onDone);
+      timer = setTimeout(launch, dur * 1000);
+    }
+    target.addEventListener('animationend', onDone);
+  }
+  launch();
+})();
+</script>
 
 </body>
 </html>

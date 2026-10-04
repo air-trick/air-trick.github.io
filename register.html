@@ -120,7 +120,7 @@
     <h1>会員登録</h1>
 
     <h2>代表者情報</h2>
-    <p class="hint">代表者ご本人も遊ばれる場合は、下の生年月日も入力してください。</p>
+    <p class="hint">代表者ご本人も遊ばれる場合は、下の<span style="white-space:nowrap;">生年月日</span>も入力してください。</p>
     <label for="name">お名前</label>
     <input id="name" type="text" placeholder="山口 太郎" autocomplete="name">
     <label for="kana">フリガナ</label>
@@ -135,9 +135,10 @@
     <div id="memberList"></div>
     <button type="button" class="btn-badge teal add-member" onclick="addMemberRow()">＋ 一緒に来る方を追加</button>
 
+    <p class="note" style="text-align:center; margin-top:24px;"><span style="display:inline-block;">ご登録の前に、</span><a href="privacy.html" target="_blank" rel="noopener" style="display:inline-block; color:var(--teal-deep); font-weight:700;">プライバシーポリシー</a><span style="display:inline-block;">をご確認ください。</span></p>
     <button class="btn-badge submit" id="submitBtn" onclick="submitForm()">登録する</button>
     <div class="error" id="errorMsg"></div>
-    <p class="note">登録後、ご自身のマイページが作成されます。ブックマークまたはホーム画面に追加しておくと、次回から来店時にすぐ開けます。次回以降はログイン画面（フリガナ＋生年月日）からも開けます。</p>
+    <p class="note">登録後、ご自身のマイページが作成されます。ブックマークまたはホーム画面に追加しておくと、次回から来店時にすぐ開けます。次回以降は<span style="white-space:nowrap;">ログイン画面</span><span style="white-space:nowrap;">（フリガナ＋生年月日）</span>からも開けます。</p>
   </div>
 
   <div class="done" id="doneView">
@@ -146,7 +147,7 @@
       <div class="label">代表者様の会員番号</div>
       <div class="id" id="issuedId">--------</div>
     </div>
-    <p>一緒に登録した方も、それぞれ自分専用のマイページが作成されています。<br>来店時はマイページを開き、今日の入場者を選んでQRコードを発行し、スタッフにご提示ください。</p>
+    <p><span style="display:inline-block;">一緒に登録した方も、</span><span style="display:inline-block;">それぞれ自分専用の</span><span style="display:inline-block;">マイページが作成されています。</span><br><span style="display:inline-block;">来店時はマイページを開き、</span><span style="display:inline-block;">今日の入場者を選んで</span><span style="display:inline-block;">「チェックインQRを読み取る」を押し、</span><span style="display:inline-block;">レジ横のQRを読み取ってください。</span></p>
     <a class="btn-badge" id="myPageLink" href="#">マイページを開く</a>
   </div>
 </div>
@@ -245,5 +246,6 @@ function submitForm() {
 }
 </script>
 
+<script src="assets/phrase.js"></script>
 </body>
 </html>
