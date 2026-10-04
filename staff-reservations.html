@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>AIR TRICK 予約一覧</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#182848; --ink-soft:#2b3b63;
+    --coral:#FF6A55; --coral-deep:#E5503C;
+    --teal:#2CB6AD; --teal-deep:#1f8f88; --marigold:#FFC24B;
+    --cloud:#FBFAF6; --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; min-height:100vh; background:#EAF4FB; font-family:"Noto Sans JP", sans-serif; color:var(--ink);}
+  body::before{content:''; position:fixed; inset:0; z-index:-1; background:linear-gradient(rgba(255,255,255,0.84), rgba(255,255,255,0.84)), url('assets/sky.jpg') center/cover no-repeat;}
+  .site-header{position:sticky; top:0; z-index:20; background:var(--white); padding:8px 16px; box-shadow:0 2px 14px rgba(24,40,72,0.10); display:flex; align-items:center; justify-content:center; gap:12px;}
+  .site-header img{display:block; height:48px; width:auto;}
+  .site-header .tag{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.78rem; background:var(--ink); color:var(--white); border-radius:999px; padding:4px 12px;}
+  .page{width:100%; max-width:760px; margin:0 auto; padding:8px 16px 60px;}
+  .nb{display:inline-block;}
+  .card{background:var(--white); border-radius:20px; padding:18px; margin-top:16px; box-shadow:0 12px 26px rgba(24,40,72,0.08);}
+  .card h2{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.98rem; margin:0 0 12px;}
+  .no-key{background:var(--white); border:2px solid var(--coral); border-radius:16px; margin-top:18px; padding:18px; text-align:center; font-size:0.9rem; line-height:1.8;}
+  .note{font-size:0.78rem; color:var(--ink-soft); line-height:1.8; margin:8px 0 0;}
+  .nav{display:flex; align-items:center; gap:8px;}
+  .nav button, .nav input{height:44px; border-radius:12px; border:2px solid #E7E3D9; background:var(--white); font-family:inherit; font-weight:800; font-size:0.95rem; color:var(--ink);}
+  .nav button{padding:0 14px; cursor:pointer;}
+  .nav input{flex:1; min-width:0; padding:0 10px; text-align:center;}
+  .nav .today{border-color:var(--teal); color:var(--teal-deep);}
+  .daystat{margin-top:12px; font-size:0.86rem; font-weight:700; color:var(--ink-soft);}
+  .closed{background:#FFE5E0; color:#8a2a1a; border-radius:12px; padding:12px 14px; margin-top:12px; font-weight:700; font-size:0.9rem;}
+
+  .slot{margin-top:14px; border:2px solid #E7E3D9; border-radius:16px; overflow:hidden;}
+  .slot-h{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; background:var(--cloud); flex-wrap:wrap;}
+  .slot-h .t{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1rem;}
+  .slot-h .c{font-weight:800; font-size:0.86rem; white-space:nowrap;}
+  .bar{height:8px; background:#EFEBE2;}
+  .bar i{display:block; height:100%; background:var(--teal);}
+  .bar i.full{background:var(--coral);}
+  .empty{padding:12px 14px; font-size:0.82rem; color:#9aa3b5;}
+  .res{padding:12px 14px; border-top:1px solid #F1EEE6;}
+  .res.dim{opacity:0.5;}
+  .res .top{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+  .res .who{font-weight:800; font-size:0.95rem;}
+  .res .who a{color:var(--teal-deep); font-weight:700; font-size:0.84rem; margin-left:6px; text-decoration:none; white-space:nowrap;}
+  .badge{font-size:0.72rem; font-weight:900; border-radius:999px; padding:3px 10px; white-space:nowrap;}
+  .b-ok{background:#E3F6F4; color:#0d5f59;} .b-arr{background:var(--teal); color:#fff;}
+  .b-can{background:#EEE; color:#666;} .b-ng{background:#FFE5E0; color:#8a2a1a;}
+  .res .ppl{font-size:0.84rem; color:var(--ink-soft); margin-top:4px; line-height:1.8;}
+  .res .warn{display:inline-block; margin-top:4px; font-size:0.76rem; font-weight:800; color:#8a2a1a; background:#FFF3CD; border-radius:8px; padding:2px 8px;}
+  .acts{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .acts button{padding:8px 12px; border-radius:10px; border:2px solid var(--teal); background:var(--white); color:var(--teal-deep); font-family:inherit; font-weight:800; font-size:0.78rem; cursor:pointer;}
+  .acts button.red{border-color:var(--coral-deep); color:var(--coral-deep);}
+  .toggle{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:0.84rem; font-weight:700;}
+  .toggle input{width:18px; height:18px;}
+
+  .form{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;}
+  .form label{font-size:0.78rem; font-weight:800; color:var(--ink-soft); display:block; margin-bottom:4px;}
+  .form select, .form input{width:100%; height:42px; border-radius:10px; border:2px solid #E7E3D9; padding:0 10px; font-family:inherit; font-size:0.9rem; background:var(--white); color:var(--ink);}
+  .form .full{grid-column:1 / -1;}
+  .add-btn{display:block; width:100%; margin-top:12px; padding:12px; border-radius:12px; border:3px solid var(--ink); background:linear-gradient(135deg, var(--marigold), var(--coral)); box-shadow:3px 3px 0 var(--ink); color:var(--ink); font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.92rem; cursor:pointer;}
+  .cl{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid #F1EEE6; font-size:0.86rem; line-height:1.7;}
+  .cl:last-child{border-bottom:none;}
+  .cl b{font-weight:800;}
+  .cl button{flex:none; padding:6px 12px; border-radius:10px; border:2px solid var(--coral-deep); background:var(--white); color:var(--coral-deep); font-family:inherit; font-weight:800; font-size:0.76rem; cursor:pointer;}
+  .msg{margin-top:10px; font-size:0.84rem; font-weight:700; display:none; border-radius:10px; padding:10px 12px;}
+  .msg.ok{background:#E3F6F4; color:#0d5f59;} .msg.err{background:#FFE5E0; color:#8a2a1a;}
+  a.back{display:block; text-align:center; margin-top:24px; font-weight:700; font-size:0.86rem; color:var(--teal-deep); text-decoration:none;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <img src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）">
+  <span class="tag">予約</span>
+</header>
+
+<div class="page">
+  <div id="noKeyView" class="no-key" style="display:none;">
+    URLに合言葉（?key=…）が付いていません。<br>正しいスタッフ用URLからアクセスしてください。
+  </div>
+
+  <div id="mainView" style="display:none;">
+    <div class="card">
+      <h2>日付を選ぶ</h2>
+      <div class="nav">
+        <button type="button" id="prevDay" aria-label="前の日">‹</button>
+        <input type="date" id="dateInput">
+        <button type="button" id="nextDay" aria-label="次の日">›</button>
+        <button type="button" class="today" id="todayBtn">今日</button>
+      </div>
+      <div class="daystat" id="dayStat"></div>
+      <label class="toggle"><input type="checkbox" id="showCancelled"><span>キャンセル済みも表示する</span></label>
+    </div>
+
+    <div id="dayBody"></div>
+    <div class="msg err" id="listErr"></div>
+
+    <div class="card">
+      <h2>お休み・営業時間の設定</h2>
+      <p class="note" style="margin-top:0;"><span class="nb">定休日（火曜）や通常の営業時間は、</span><span class="nb">自動で反映されます。</span><span class="nb">特別な日だけ、ここで設定してください。</span></p>
+      <div id="closureList" style="margin-top:8px;"></div>
+      <div class="form">
+        <div><label for="cType">種類</label>
+          <select id="cType"><option value="休業">休業（お休み）</option><option value="長期休暇">長期休暇（平日 10:00〜16:00）</option><option value="臨時営業">臨時営業（時間を指定）</option></select></div>
+        <div><label for="cMemo">メモ（任意）</label><input id="cMemo" type="text" maxlength="30" placeholder="例：施設点検"></div>
+        <div><label for="cFrom">開始日</label><input id="cFrom" type="date"></div>
+        <div><label for="cTo">終了日</label><input id="cTo" type="date"></div>
+        <div><label for="cSt">開始時刻（任意）</label><input id="cSt" type="time"></div>
+        <div><label for="cEn">終了時刻（任意）</label><input id="cEn" type="time"></div>
+      </div>
+      <p class="note" id="cHelp"></p>
+      <button type="button" class="add-btn" id="cAdd">この内容で追加する</button>
+      <div class="msg" id="cMsg"></div>
+    </div>
+
+    <a class="back" id="backLink" href="staff.html">← スタッフ画面へ戻る</a>
+  </div>
+</div>
+
+<script>
+// GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
+const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
+const KEY = new URLSearchParams(location.search).get('key') || '';
+const $ = function (id) { return document.getElementById(id); };
+const WD = ['日', '月', '火', '水', '木', '金', '土'];
+let current = '';
+let lastData = null;
+let seq = 0;
+
+function post(action, payload) {
+  return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, staffKey: KEY, payload: payload }) })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { if (!d.ok) throw new Error(d.error || '通信に失敗しました。'); return d.result; });
+}
+function ymd(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function todayJst() { const t = new Date(Date.now() + 9 * 3600 * 1000); return t.toISOString().slice(0, 10); }
+function addDays(s, n) { return new Date(new Date(s + 'T12:00:00Z').getTime() + n * 86400000).toISOString().slice(0, 10); }
+function jp(s) { const d = new Date(s + 'T12:00:00Z'); return d.getUTCFullYear() + '年' + (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日(' + WD[d.getUTCDay()] + ')'; }
+function msg(id, text, ok) { const b = $(id); if (!text) { b.style.display = 'none'; return; } b.textContent = text; b.className = 'msg ' + (ok ? 'ok' : 'err'); b.style.display = 'block'; }
+
+if (!KEY) {
+  $('noKeyView').style.display = 'block';
+} else {
+  $('mainView').style.display = 'block';
+  $('backLink').href = 'staff.html?key=' + encodeURIComponent(KEY);
+  go(todayJst());
+  loadClosures();
+}
+
+// ---------- 日ごとの予約 ----------
+function go(date) {
+  current = date;
+  $('dateInput').value = date;
+  load();
+}
+$('prevDay').addEventListener('click', function () { go(addDays(current, -1)); });
+$('nextDay').addEventListener('click', function () { go(addDays(current, 1)); });
+$('todayBtn').addEventListener('click', function () { go(todayJst()); });
+$('dateInput').addEventListener('change', function () { if ($('dateInput').value) go($('dateInput').value); });
+$('showCancelled').addEventListener('change', function () { if (lastData) draw(lastData); });
+
+function load() {
+  const my = ++seq;
+  msg('listErr', '');
+  $('dayStat').textContent = '読み込み中…';
+  post('staffGetReservations', { date: current }).then(function (r) {
+    if (my !== seq) return;
+    lastData = r; draw(r);
+  }).catch(function (err) { if (my !== seq) return; $('dayStat').textContent = ''; msg('listErr', err.message); });
+}
+
+function badge(status) {
+  const b = document.createElement('span'); b.className = 'badge'; b.textContent = status;
+  b.className += status === '予約中' ? ' b-ok' : status === '来店済み' ? ' b-arr' : (status === '無断欠席' || status === '当日キャンセル') ? ' b-ng' : ' b-can';
+  return b;
+}
+
+function draw(r) {
+  const body = $('dayBody'); body.innerHTML = '';
+  const active = r.reservations.filter(function (x) { return x.status === '予約中' || x.status === '来店済み'; });
+  const total = active.reduce(function (s, x) { return s + x.headcount; }, 0);
+  $('dayStat').textContent = jp(r.date) + '　予約 ' + active.length + '件・' + total + '名';
+
+  if (!r.open && r.reservations.length === 0) {
+    const c = document.createElement('div'); c.className = 'closed'; c.textContent = jp(r.date) + 'は営業しない日です' + (r.reason ? '（' + r.reason + '）' : '') + '。'; body.appendChild(c); return;
+  }
+  if (!r.open) {
+    const c = document.createElement('div'); c.className = 'closed'; c.textContent = 'この日は営業しない設定ですが、予約が残っています。お客様へのご連絡をお願いします。'; body.appendChild(c);
+  }
+  const showAll = $('showCancelled').checked;
+  const times = {};
+  r.slots.forEach(function (s) { times[s.time] = { time: s.time, end: s.end, booked: s.booked }; });
+  r.reservations.forEach(function (x) { if (!times[x.time]) times[x.time] = { time: x.time, end: x.endTime, booked: 0 }; });
+  Object.keys(times).sort().forEach(function (t) {
+    const s = times[t];
+    const sec = document.createElement('div'); sec.className = 'slot';
+    const h = document.createElement('div'); h.className = 'slot-h';
+    const tt = document.createElement('span'); tt.className = 't'; tt.textContent = s.time + '〜' + s.end;
+    const cc = document.createElement('span'); cc.className = 'c'; cc.textContent = s.booked + ' / ' + r.capacity + '名';
+    h.appendChild(tt); h.appendChild(cc); sec.appendChild(h);
+    const bar = document.createElement('div'); bar.className = 'bar';
+    const fill = document.createElement('i'); fill.style.width = Math.min(100, Math.round(s.booked / r.capacity * 100)) + '%'; if (s.booked >= r.capacity) fill.className = 'full';
+    bar.appendChild(fill); sec.appendChild(bar);
+
+    const list = r.reservations.filter(function (x) { return x.time === t && (showAll || x.status === '予約中' || x.status === '来店済み' || x.status === '無断欠席' || x.status === '当日キャンセル'); });
+    if (list.length === 0) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'ご予約はありません'; sec.appendChild(e); }
+    list.forEach(function (x) { sec.appendChild(resRow(x)); });
+    body.appendChild(sec);
+  });
+}
+
+function resRow(x) {
+  const d = document.createElement('div'); d.className = 'res' + (x.status === 'キャンセル' ? ' dim' : '');
+  const top = document.createElement('div'); top.className = 'top';
+  const who = document.createElement('div'); who.className = 'who';
+  who.appendChild(document.createTextNode(x.ownerName + ' 様　' + x.headcount + '名'));
+  if (x.ownerPhone) { const a = document.createElement('a'); a.href = 'tel:' + x.ownerPhone.replace(/[^0-9+]/g, ''); a.textContent = x.ownerPhone; who.appendChild(a); }
+  top.appendChild(who); top.appendChild(badge(x.status)); d.appendChild(top);
+
+  const p = document.createElement('div'); p.className = 'ppl';
+  p.textContent = (x.swap ? '（保護者は交代）' : '') + x.participants.map(function (q) { return q.name + '（' + q.category + '）'; }).join('、');
+  d.appendChild(p);
+  if (x.recentIssues >= 1) {
+    const w = document.createElement('span'); w.className = 'warn'; w.textContent = '直近90日：当日キャンセル・無断欠席 ' + x.recentIssues + '回'; d.appendChild(w);
+  }
+  const acts = document.createElement('div'); acts.className = 'acts';
+  if (x.status === '予約中') {
+    acts.appendChild(act('来店済みにする', '', function () { setStatus(x, '来店済み'); }));
+    acts.appendChild(act('キャンセルする（お電話）', 'red', function () {
+      if (confirm(x.ownerName + ' 様の ' + x.time + '〜 のご予約をキャンセルします。' + (current === lastData.today ? '\n\n本日の予約のため、「当日キャンセル」として記録されます。' : '') + '\n\nよろしいですか？')) cancel(x);
+    }));
+  } else if (x.status === '無断欠席' || x.status === '当日キャンセル') {
+    acts.appendChild(act('来店済みに直す', '', function () { setStatus(x, '来店済み'); }));
+  } else if (x.status === '来店済み') {
+    acts.appendChild(act('予約中にもどす', '', function () { setStatus(x, '予約中'); }));
+  }
+  if (acts.children.length) d.appendChild(acts);
+  return d;
+}
+function act(label, cls, fn) { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = label; b.addEventListener('click', fn); return b; }
+function setStatus(x, status) { post('staffSetReservationStatus', { reservationId: x.id, status: status }).then(load).catch(function (e) { msg('listErr', e.message); }); }
+function cancel(x) { post('staffCancelReservation', { reservationId: x.id }).then(load).catch(function (e) { msg('listErr', e.message); }); }
+
+// ---------- お休み・営業時間の設定 ----------
+function loadClosures() {
+  post('staffGetClosures', {}).then(function (r) {
+    const box = $('closureList'); box.innerHTML = '';
+    if (r.closures.length === 0) { const p = document.createElement('p'); p.className = 'note'; p.style.margin = '0'; p.textContent = '設定されているお休み・特別営業はありません。'; box.appendChild(p); return; }
+    r.closures.forEach(function (c) {
+      const row = document.createElement('div'); row.className = 'cl';
+      const t = document.createElement('div');
+      const range = c.from === c.to ? jp(c.from) : jp(c.from) + ' 〜 ' + jp(c.to);
+      const time = c.st && c.en ? '　' + c.st + '〜' + c.en : '';
+      t.innerHTML = '<b></b><br><span></span>';
+      t.querySelector('b').textContent = c.type + time;
+      t.querySelector('span').textContent = range + (c.memo ? '　' + c.memo : '');
+      const del = document.createElement('button'); del.type = 'button'; del.textContent = '削除';
+      del.addEventListener('click', function () { if (confirm('この設定を削除します。よろしいですか？')) post('staffDeleteClosure', { closureId: c.id }).then(function () { loadClosures(); load(); }).catch(function (e) { msg('cMsg', e.message); }); });
+      row.appendChild(t); row.appendChild(del); box.appendChild(row);
+    });
+  }).catch(function (e) { msg('cMsg', e.message); });
+}
+
+const HELP = {
+  '休業': '開始日〜終了日をお休みにします。時刻を入れると、その時間帯の回だけお休みになります（空欄なら1日中）。',
+  '長期休暇': '春・夏・冬休みなどの期間の「平日」を、10:00〜16:00の営業にします（時刻の入力は不要です）。',
+  '臨時営業': '定休日などに、特別に営業する日を設定します。開始時刻と終了時刻が必要です。'
+};
+function updateHelp() { $('cHelp').textContent = HELP[$('cType').value]; }
+$('cType').addEventListener('change', updateHelp); updateHelp();
+
+$('cAdd').addEventListener('click', function () {
+  msg('cMsg', '');
+  const type = $('cType').value, from = $('cFrom').value, to = $('cTo').value || from;
+  if (!from) { msg('cMsg', '開始日を入力してください。'); return; }
+  post('staffAddClosure', { type: type, from: from, to: to, startTime: $('cSt').value, endTime: $('cEn').value, memo: $('cMemo').value }).then(function (r) {
+    msg('cMsg', '追加しました。' + (r.affectedReservations > 0 ? '（この期間に予約が ' + r.affectedReservations + '件あります。お客様へのご連絡をお願いします）' : ''), true);
+    $('cFrom').value = ''; $('cTo').value = ''; $('cSt').value = ''; $('cEn').value = ''; $('cMemo').value = '';
+    loadClosures(); load();
+  }).catch(function (e) { msg('cMsg', e.message); });
+});
+</script>
+<script src="assets/phrase.js"></script>
+</body>
+</html>

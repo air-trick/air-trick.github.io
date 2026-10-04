@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/page.css">
+<script src="assets/config.js"></script>
 <style>
   body{overflow-x:hidden; padding-top:64px;}
   button{font-family:inherit;}
@@ -181,7 +182,7 @@
   <a href="access.html">アクセス</a>
   <a href="hours.html">営業時間</a>
   <a href="guide.html">ご利用ガイド</a>
-  <a href="https://airrsv.net/hoppinmashyamaguchi/calendar" target="_blank" rel="noopener" style="color:var(--teal-deep);">WEB予約（エアリザーブ）</a>
+  <a id="reserveMenu" href="https://airrsv.net/hoppinmashyamaguchi/calendar" target="_blank" rel="noopener" style="color:var(--teal-deep);">WEB予約（エアリザーブ）</a>
   <a href="register.html" style="color:var(--coral-deep);">新規会員登録</a>
   <a href="login.html" style="color:var(--teal-deep);">会員ログイン</a>
 </nav>
@@ -291,6 +292,15 @@
   }
   menuBtn.addEventListener('click', function () { setMenu(!menuPanel.classList.contains('open')); });
   menuPanel.addEventListener('click', function (e) { if (e.target.tagName === 'A') setMenu(false); });
+
+  // 独自のWEB予約を公開したら（assets/config.js の reservationOpen を true にすると）、メニューの「WEB予約」がHP内の予約ページになる
+  if (window.AIRTRICK_CONFIG && window.AIRTRICK_CONFIG.reservationOpen) {
+    var rm = document.getElementById('reserveMenu');
+    rm.href = 'reserve.html';
+    rm.removeAttribute('target');
+    rm.removeAttribute('rel');
+    rm.textContent = 'WEB予約';
+  }
 
   // ---------- よくある質問 ----------
   // 「/」は、改行してよい文節の区切り（読みやすい位置で折り返すための目印。画面には出ない）

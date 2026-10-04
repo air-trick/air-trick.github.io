@@ -56,7 +56,7 @@
   .stat.accent .n{color:var(--coral-deep);}
 
   .bar-row{display:flex; align-items:center; gap:10px; margin-top:10px; font-size:0.86rem;}
-  .bar-row .name{flex:none; width:6.2em; font-weight:700;}
+  .bar-row .name{flex:none; width:7.4em; font-weight:700; font-size:0.82rem;}
   .bar-row .track{flex:1; height:14px; background:#F1EEE6; border-radius:999px; overflow:hidden;}
   .bar-row .fill{display:block; height:100%; border-radius:999px; min-width:2px;}
   .bar-row .val{flex:none; width:6.5em; text-align:right; font-weight:700; white-space:nowrap;}
@@ -149,6 +149,12 @@
         <h2>チェックインの方法</h2>
         <div id="methodBars"></div>
         <p class="note"><span class="nb">「セルフ」は、お客様のスマホで</span><span class="nb">チェックインした人数、</span><span class="nb">「スタッフ」は、</span><span class="nb">スタッフ画面で読み取った人数です。</span></p>
+      </div>
+
+      <div class="card">
+        <h2>WEB予約の状況</h2>
+        <div id="resvBars"></div>
+        <p class="note"><span class="nb">期間内の「予約の日付」で数えています。</span><span class="nb">予約の人数は、</span><span class="nb">取り消されていないご予約の人数です。</span></p>
       </div>
 
       <button type="button" class="csv" id="csvBtn">日ごとの集計をCSVで保存（Excel用）</button>
@@ -340,6 +346,15 @@ function render(r) {
       me.appendChild(barRow(k, v, mMax, k === 'セルフ' ? '#2CB6AD' : '#FFC24B', v + '名（' + pct + '%）'));
     });
   }
+
+  // 予約の状況
+  const rv = r.reservations || { booked: 0, bookedPeople: 0, cancelled: 0, sameDayCancelled: 0, noShow: 0 };
+  const rb = $('resvBars'); rb.innerHTML = '';
+  const rMax = Math.max(rv.booked, rv.cancelled, rv.sameDayCancelled, rv.noShow, 1);
+  rb.appendChild(barRow('予約', rv.booked, rMax, '#2CB6AD', rv.booked + '件（' + rv.bookedPeople + '名）'));
+  rb.appendChild(barRow('キャンセル', rv.cancelled, rMax, '#B4B2A9', rv.cancelled + '件'));
+  rb.appendChild(barRow('当日キャンセル', rv.sameDayCancelled, rMax, '#FFC24B', rv.sameDayCancelled + '件'));
+  rb.appendChild(barRow('無断欠席', rv.noShow, rMax, '#FF6A55', rv.noShow + '件'));
 
   $('sMembers').textContent = '現在 ' + r.totalMembers + '名';
   setPhrases($('sinceNote'), r.firstRecordedDate

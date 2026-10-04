@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="assets/config.js"></script>
 <style>
   :root{
     --ink:#182848; --ink-soft:#2b3b63;
@@ -147,6 +148,14 @@
     padding:10px 14px; font-size:0.84rem; line-height:1.7; display:none;
   }
   .nb{display:inline-block;}
+  .reserve-go{
+    display:block; margin-top:12px; padding:12px; border-radius:12px; border:3px solid var(--ink);
+    background:linear-gradient(135deg, var(--marigold), var(--coral)); box-shadow:4px 4px 0 var(--ink); color:var(--ink);
+    font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.95rem; text-align:center; text-decoration:none;
+  }
+  .reserve-go.alt{background:var(--white); border-color:var(--teal); box-shadow:3px 3px 0 var(--teal); color:var(--teal-deep); font-size:0.88rem;}
+  .resv-item{border:2px solid #E7E3D9; border-radius:12px; padding:10px 12px; margin-top:8px;}
+  .resv-item b{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; color:var(--ink);}
   @media (max-width:340px){ .issue-btn{font-size:0.92rem; padding:16px 8px;} }
   .qr-reason{font-size:0.84rem; color:var(--coral-deep); font-weight:700; line-height:1.7; margin-bottom:6px;}
 
@@ -245,6 +254,13 @@
       <div class="me-sub"><span class="badge" id="meCategory"></span>　通算来店回数：<span id="meVisitCount"></span>回</div>
     </div>
 
+    <div class="card" id="reserveCard" style="display:none;">
+      <h2>WEB予約</h2>
+      <div id="reserveBody" style="font-size:0.88rem; line-height:1.8; color:var(--ink-soft);"></div>
+      <a class="reserve-go" id="reserveGo" href="reserve.html">ご予約の確認・変更</a>
+      <a class="reserve-go alt" id="reserveNew" href="reserve.html?new=1">新しく予約する</a>
+    </div>
+
     <div class="card">
       <h2>本日の入場者を選ぶ</h2>
 
@@ -321,6 +337,7 @@
       <div class="done-total" id="doneTotal"></div>
       <div class="done-cats" id="doneCats"></div>
       <div class="done-first" id="doneFirst" style="display:none;"></div>
+      <div class="done-dup" id="doneResv" style="display:none; background:#E3F6F4; color:#0d5f59; font-weight:700;"></div>
       <ul class="done-list" id="doneList"></ul>
       <div class="done-dup" id="doneDup" style="display:none;"></div>
       <div class="done-note">この画面をスタッフにご提示ください。</div>
@@ -413,6 +430,49 @@ function init_(page) {
 
   el.loading.style.display = 'none';
   el.content.style.display = 'block';
+
+  // WEB予約の入口（config.js の reservationOpen が true のとき、または確認用に ?rsv=1 を付けたときだけ表示）
+  if ((window.AIRTRICK_CONFIG && window.AIRTRICK_CONFIG.reservationOpen) || urlParams.get('rsv') === '1') loadReserveCard_();
+}
+
+function loadReserveCard_() {
+  const idq = encodeURIComponent(myId);
+  document.getElementById('reserveGo').href = 'reserve.html?id=' + idq;
+  document.getElementById('reserveNew').href = 'reserve.html?id=' + idq + '&new=1';
+  document.getElementById('reserveCard').style.display = 'block';
+  const body = document.getElementById('reserveBody');
+  body.textContent = '読み込み中…';
+  fetch(API_URL + '?action=getMyReservations&id=' + idq)
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (!data.ok || !data.result.found) throw new Error('x');
+      const list = data.result.reservations;
+      body.textContent = '';
+      if (list.length === 0) {
+        setPhrases_(body, '現在、ご予約はありません。');
+        document.getElementById('reserveGo').style.display = 'none';
+        return;
+      }
+      const wd = ['日', '月', '火', '水', '木', '金', '土'];
+      list.slice(0, 3).forEach(function (r) {
+        const d = new Date(r.date + 'T12:00:00Z');
+        const item = document.createElement('div');
+        item.className = 'resv-item';
+        const b = document.createElement('b');
+        b.textContent = (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日(' + wd[d.getUTCDay()] + ')　' + r.time + '〜' + r.endTime;
+        item.appendChild(b);
+        item.appendChild(document.createElement('br'));
+        item.appendChild(document.createTextNode(r.headcount + '名'));
+        body.appendChild(item);
+      });
+      if (list.length > 3) {
+        const more = document.createElement('div');
+        more.style.marginTop = '6px';
+        more.textContent = 'ほか ' + (list.length - 3) + '件';
+        body.appendChild(more);
+      }
+    })
+    .catch(function () { body.textContent = 'ご予約の情報を読み込めませんでした。'; });
 }
 
 function renderGroupChips_() {
@@ -798,6 +858,14 @@ function showDone_(result) {
     firstBox.style.display = 'block';
   } else {
     firstBox.style.display = 'none';
+  }
+
+  const resvBox = document.getElementById('doneResv');
+  if (result.reservation) {
+    setPhrases_(resvBox, 'WEB予約を確認しました。/' + result.reservation.time + '〜' + result.reservation.endTime + '（' + result.reservation.headcount + '名）');
+    resvBox.style.display = 'block';
+  } else {
+    resvBox.style.display = 'none';
   }
 
   const list = document.getElementById('doneList');

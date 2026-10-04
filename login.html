@@ -132,6 +132,11 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKm
 const STORAGE_KEY = 'airtrick_personId';
 const STORAGE_NAME_KEY = 'airtrick_personName';
 
+// ログイン後に開くページ（トップのWEB予約から来た場合は、予約ページ）
+function afterLoginPage_() {
+  return new URLSearchParams(location.search).get('next') === 'reserve' ? 'reserve.html' : 'mypage.html';
+}
+
 const kanaEl = document.getElementById('kana');
 const birthdateEl = document.getElementById('birthdate');
 const phoneRow = document.getElementById('phoneRow');
@@ -152,7 +157,7 @@ const errorEl = document.getElementById('errorMsg');
     document.getElementById('switchDivider').style.display = 'flex';
     document.getElementById('savedName').textContent = savedName || '会員';
     document.getElementById('savedBtn').addEventListener('click', function () {
-      location.href = 'mypage.html?id=' + encodeURIComponent(savedId);
+      location.href = afterLoginPage_() + '?id=' + encodeURIComponent(savedId);
     });
   }
 })();
@@ -197,7 +202,7 @@ loginBtn.addEventListener('click', function () {
           localStorage.setItem(STORAGE_KEY, result.personId);
           localStorage.setItem(STORAGE_NAME_KEY, kana);
         } catch (e) { /* 保存できなくても続行 */ }
-        location.href = 'mypage.html?id=' + encodeURIComponent(result.personId);
+        location.href = afterLoginPage_() + '?id=' + encodeURIComponent(result.personId);
         return;
       }
       if (result.status === 'ambiguous') {

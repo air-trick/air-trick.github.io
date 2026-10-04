@@ -127,7 +127,10 @@
     <ul class="checkin-list" id="checkinList"></ul>
 
     <div class="nav-links">
+      <a class="nav-btn" id="resvLink" href="staff-reservations.html">予約一覧</a>
       <a class="nav-btn" id="statsLink" href="stats.html">集計を見る</a>
+    </div>
+    <div class="nav-links" style="margin-top:12px;">
       <a class="nav-btn alt" id="guideLink" href="staff-guide.html">操作ガイド</a>
     </div>
   </div>
@@ -152,6 +155,7 @@ if (!STAFF_KEY_CLIENT) {
 } else {
   // 集計画面・操作ガイドへは、合言葉を引き継いで移動する
   document.getElementById('statsLink').href = 'stats.html?key=' + encodeURIComponent(STAFF_KEY_CLIENT);
+  document.getElementById('resvLink').href = 'staff-reservations.html?key=' + encodeURIComponent(STAFF_KEY_CLIENT);
   document.getElementById('guideLink').href = 'staff-guide.html?key=' + encodeURIComponent(STAFF_KEY_CLIENT);
 
   input.addEventListener('keydown', function (e) {
@@ -212,6 +216,9 @@ function showGroupResult(result) {
   let html = '<div class="rtotal">' + result.total + '名 ご来店</div><div class="rline">' + breakdown + '</div>';
   if (firstTimers.length > 0) {
     html += '<div class="rline">初回の方（登録料500円）：' + firstTimers.map(function (m) { return escapeHtml(m.name); }).join('・') + '様</div>';
+  }
+  if (result.reservation) {
+    html += '<div class="rline"><span class="first">WEB予約あり：</span>' + escapeHtml(result.reservation.time) + '〜' + escapeHtml(result.reservation.endTime) + '（' + result.reservation.headcount + '名）</div>';
   }
   const dups = result.members.filter(function (m) { return m.duplicate; });
   if (dups.length > 0) {
