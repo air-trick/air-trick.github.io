@@ -197,9 +197,10 @@
       </div>
       <button class="small" style="margin-top:10px; width:100%;" id="searchBtn">検索して追加</button>
       <div class="search-result" id="searchResult"></div>
+      <button class="small" style="margin-top:10px; width:100%;" id="showNewBtn">＋ 未登録の方を新しく登録して追加</button>
 
       <div class="new-person-form" id="newPersonForm">
-        <p style="margin:0 0 8px; font-size:0.82rem; color:var(--ink-soft);">見つかりませんでした。新しく登録しますか？</p>
+        <p id="npMsg" style="margin:0 0 8px; font-size:0.82rem; color:var(--ink-soft);">見つかりませんでした。新しく登録しますか？</p>
         <label>お名前</label>
         <input id="npName" type="text" placeholder="山口 花子">
         <label>フリガナ</label>
@@ -438,6 +439,7 @@ document.getElementById('searchBtn').addEventListener('click', function () {
     .then(function (data) {
       if (!data.ok) throw new Error(data.error || '検索に失敗しました。');
       if (data.matches.length === 0) {
+        document.getElementById('npMsg').textContent = '見つかりませんでした。新しく登録しますか？';
         el.newPersonForm.style.display = 'block';
         document.getElementById('npName').value = '';
         document.getElementById('npKana').value = kana;
@@ -462,6 +464,17 @@ document.getElementById('searchBtn').addEventListener('click', function () {
     .catch(function (err) {
       el.searchResult.textContent = err.message || '検索に失敗しました。';
     });
+});
+
+// ---------- 検索せずに、直接「新しく登録して追加」を開く ----------
+document.getElementById('showNewBtn').addEventListener('click', function () {
+  el.searchResult.innerHTML = '';
+  document.getElementById('npMsg').textContent = '一緒に遊ぶ方の情報を入力してください。登録と同時に、今日の入場者に追加されます。';
+  document.getElementById('npName').value = '';
+  document.getElementById('npKana').value = '';
+  document.getElementById('npBirthdate').value = '';
+  el.newPersonForm.style.display = 'block';
+  document.getElementById('npName').focus();
 });
 
 document.getElementById('npSubmit').addEventListener('click', function () {
