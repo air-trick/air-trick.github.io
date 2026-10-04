@@ -190,9 +190,15 @@ function showGroupResult(result) {
   if (firstTimers.length > 0) {
     html += '<div class="rline">初回の方（登録料500円）：' + firstTimers.map(function (m) { return escapeHtml(m.name); }).join('・') + '様</div>';
   }
+  const dups = result.members.filter(function (m) { return m.duplicate; });
+  if (dups.length > 0) {
+    html += '<div class="rline"><span class="first">4時間以内に記録済み（来店回数は増えません）：</span>' +
+      dups.map(function (m) { return escapeHtml(m.name); }).join('・') + '様</div>';
+  }
   showResult(type, html);
 
-  firstTimers.forEach(function (m) { addToList(m.name); });
+  // 記録済みの再読み取りは、初回一覧に二重に載せない
+  firstTimers.filter(function (m) { return !m.duplicate; }).forEach(function (m) { addToList(m.name); });
 }
 
 function showResult(type, html) {

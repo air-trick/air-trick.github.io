@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
   :root{
     --ink:#182848; --ink-soft:#2b3b63;
@@ -137,6 +138,63 @@
   .issue-btn:active{transform:translate(3px,3px); box-shadow:2px 2px 0 var(--ink);}
   .issue-btn:disabled{opacity:0.5;}
 
+  .fallback-link{
+    display:block; width:100%; margin-top:12px; background:none; border:none;
+    color:var(--ink-soft); font-size:0.8rem; text-decoration:underline; cursor:pointer; text-align:center;
+  }
+  .pending-note{
+    margin-top:16px; background:#FFF3CD; color:#633806; border-radius:12px;
+    padding:10px 14px; font-size:0.84rem; line-height:1.7; display:none;
+  }
+  .qr-reason{font-size:0.84rem; color:var(--coral-deep); font-weight:700; line-height:1.7; margin-bottom:6px;}
+
+  /* 全画面の重ね表示（読み取り中／確認中／チェックイン完了） */
+  .overlay{position:fixed; inset:0; z-index:100; display:none;}
+  .scan-overlay{background:#0d1730; flex-direction:column; align-items:center; justify-content:center; color:#fff; padding:20px;}
+  .scan-overlay video{width:100%; max-width:420px; border-radius:16px; background:#000; aspect-ratio:3/4; object-fit:cover;}
+  .scan-stage{position:relative; width:100%; max-width:420px; overflow:hidden; border-radius:16px;}
+  .scan-stage video{display:block;}
+  .scan-frame{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:62%; aspect-ratio:1/1;
+    border:4px solid var(--marigold); border-radius:16px; box-shadow:0 0 0 9999px rgba(13,23,48,0.35);
+  }
+  .scan-msg{margin-top:16px; font-size:0.92rem; font-weight:700; text-align:center; min-height:1.6em;}
+  .scan-cancel{
+    margin-top:14px; background:none; border:2px solid rgba(255,255,255,0.6); color:#fff;
+    border-radius:999px; padding:8px 28px; font-size:0.9rem; font-weight:700; cursor:pointer;
+  }
+  .busy-overlay{background:rgba(24,40,72,0.82); align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:1rem;}
+  .done-overlay{
+    background:linear-gradient(rgba(255,255,255,0.88), rgba(255,255,255,0.88)), url('assets/sky.jpg') center/cover no-repeat;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  .done-card{
+    width:100%; max-width:440px; margin:0 auto; min-height:100%; background:var(--white);
+    box-shadow:0 0 30px rgba(24,40,72,0.15); padding-bottom:28px;
+  }
+  .done-head{background:var(--teal); color:#fff; text-align:center; padding:14px 10px; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.05rem;}
+  .done-date{text-align:center; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.7rem; margin-top:18px; color:var(--ink);}
+  .done-spin{height:190px; display:flex; align-items:center; justify-content:center; margin:6px 0 2px;}
+  .done-spin img{display:block; height:auto; animation:spinX 3s linear infinite; will-change:transform;}
+  @keyframes spinX{
+    0%{transform:scaleX(1);} 12.5%{transform:scaleX(.707);} 25%{transform:scaleX(0);} 37.5%{transform:scaleX(-.707);}
+    50%{transform:scaleX(-1);} 62.5%{transform:scaleX(-.707);} 75%{transform:scaleX(0);} 87.5%{transform:scaleX(.707);} 100%{transform:scaleX(1);}
+  }
+  .done-body{padding:0 20px;}
+  .done-total{text-align:center; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.3rem;}
+  .done-cats{margin-top:8px; font-size:0.95rem; line-height:1.9; text-align:center; font-weight:700;}
+  .done-first{margin-top:14px; background:#FFF3CD; border:2px solid var(--marigold); color:#633806; border-radius:12px; padding:10px 14px; font-size:0.9rem; font-weight:700; line-height:1.7;}
+  .done-dup{margin-top:10px; background:var(--cloud); color:var(--ink-soft); border-radius:12px; padding:8px 14px; font-size:0.8rem; line-height:1.7;}
+  .done-list{list-style:none; margin:14px 0 0; padding:0; border-top:1px solid #F1EEE6;}
+  .done-list li{display:flex; justify-content:space-between; gap:8px; padding:8px 2px; border-bottom:1px solid #F1EEE6; font-size:0.9rem;}
+  .done-list .tag{font-size:0.72rem; font-weight:900; background:var(--marigold); color:var(--ink); border-radius:999px; padding:1px 8px; margin-left:6px;}
+  .done-note{margin-top:14px; text-align:center; font-size:0.8rem; color:var(--ink-soft); line-height:1.7;}
+  .done-close{
+    display:block; margin:18px auto 0; background:none; border:2px solid var(--ink-soft); color:var(--ink-soft);
+    border-radius:999px; padding:8px 30px; font-size:0.88rem; font-weight:700; cursor:pointer;
+  }
+
   .qr-box{text-align:center; margin-top:14px;}
   .qr-box .qr-area{margin-top:10px;}
   .qr-box .qr-area svg, .qr-box .qr-area canvas, .qr-box .qr-area img{margin:0 auto;}
@@ -220,10 +278,13 @@
       <div class="breakdown" id="summaryBreakdown"></div>
     </div>
 
-    <button class="issue-btn" id="issueBtn">入場QRを発行</button>
+    <div class="pending-note" id="pendingNote">チェックインQRを読み取りました。入場者を選んだら、下の「チェックインする」を押してください。</div>
+    <button class="issue-btn" id="scanBtn">📷 チェックインQRを読み取る</button>
+    <button class="fallback-link" id="fallbackLink">カメラが起動しない方はこちら</button>
 
     <div class="card qr-box" id="qrBox" style="display:none;">
       <h2>スタッフにこの画面をご提示ください</h2>
+      <div class="qr-reason" id="qrReason"></div>
       <div class="qr-area" id="qrArea"></div>
       <div class="qr-note" id="qrSummaryText"></div>
       <button class="edit-again" id="editAgainBtn">入場者を選び直す</button>
@@ -237,11 +298,44 @@
   </div>
 </div>
 
+<div class="overlay scan-overlay" id="scanOverlay">
+  <div class="scan-stage">
+    <video id="scanVideo" playsinline muted></video>
+    <div class="scan-frame"></div>
+  </div>
+  <div class="scan-msg" id="scanMsg">レジ横のチェックインQRを枠に入れてください</div>
+  <button class="scan-cancel" id="scanCancel">やめる</button>
+</div>
+
+<div class="overlay busy-overlay" id="busyOverlay"><span id="busyText">位置を確認しています…</span></div>
+
+<div class="overlay done-overlay" id="doneOverlay">
+  <div class="done-card">
+    <div class="done-head">チェックイン完了</div>
+    <div class="done-date" id="doneDate"></div>
+    <div class="done-spin"><img id="doneImg" alt=""></div>
+    <div class="done-body">
+      <div class="done-total" id="doneTotal"></div>
+      <div class="done-cats" id="doneCats"></div>
+      <div class="done-first" id="doneFirst" style="display:none;"></div>
+      <ul class="done-list" id="doneList"></ul>
+      <div class="done-dup" id="doneDup" style="display:none;"></div>
+      <div class="done-note">この画面をスタッフにご提示ください。</div>
+      <button class="done-close" id="doneClose">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
 const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
 
-const myId = new URLSearchParams(window.location.search).get('id');
+const urlParams = new URLSearchParams(window.location.search);
+const myId = urlParams.get('id');
+// スマホ標準のカメラでチェックインQRを読み取って開いた場合は、店舗用の合言葉がここに入っている
+let pendingStoreKey = urlParams.get('checkin') || '';
+
+try { if (myId) localStorage.setItem('airtrick_pid', myId); } catch (e) {}
 
 let me = null;
 let groups = [];
@@ -261,7 +355,8 @@ const el = {
   entrantError: document.getElementById('entrantError'),
   summaryTotal: document.getElementById('summaryTotal'),
   summaryBreakdown: document.getElementById('summaryBreakdown'),
-  issueBtn: document.getElementById('issueBtn'),
+  scanBtn: document.getElementById('scanBtn'),
+  fallbackLink: document.getElementById('fallbackLink'),
   qrBox: document.getElementById('qrBox'),
   qrArea: document.getElementById('qrArea'),
   qrSummaryText: document.getElementById('qrSummaryText'),
@@ -307,6 +402,11 @@ function init_(page) {
   renderCompanionChips_(page.companions.map(function (p) { return p.personId; }));
   renderGroupList_();
   renderEntrants_();
+
+  if (pendingStoreKey) {
+    el.scanBtn.textContent = '✅ チェックインする';
+    document.getElementById('pendingNote').style.display = 'block';
+  }
 
   el.loading.style.display = 'none';
   el.content.style.display = 'block';
@@ -419,7 +519,8 @@ function renderSummary_() {
     el.summaryBreakdown.appendChild(row);
   });
 
-  el.issueBtn.disabled = ids.length === 0;
+  el.scanBtn.disabled = ids.length === 0;
+  el.fallbackLink.disabled = ids.length === 0;
 }
 
 // ---------- 検索して追加 ----------
@@ -507,10 +608,251 @@ document.getElementById('npSubmit').addEventListener('click', function () {
     });
 });
 
-// ---------- QR発行 ----------
-document.getElementById('issueBtn').addEventListener('click', function () {
+// ---------- チェックイン（レジ横のQRをカメラで読み取る） ----------
+const scanOverlay = document.getElementById('scanOverlay');
+const scanVideo = document.getElementById('scanVideo');
+const scanMsg = document.getElementById('scanMsg');
+const busyOverlay = document.getElementById('busyOverlay');
+const doneOverlay = document.getElementById('doneOverlay');
+const SCAN_HINT = 'レジ横のチェックインQRを枠に入れてください';
+let scanStream = null;
+let scanTimer = 0;
+let scanning = false;
+let busy = false;
+
+// 完了画面用の画像を先に読み込んでおく
+const DONE_IMAGES = [
+  { src: 'assets/anim_kid.png', width: 150 },
+  { src: 'assets/anim_snow.png', width: 190 }
+];
+DONE_IMAGES.forEach(function (d) { new Image().src = d.src; });
+
+el.scanBtn.addEventListener('click', function () {
+  if (busy || checkedEntrantIds_().length === 0) return;
+  if (pendingStoreKey) {
+    runCheckin_(pendingStoreKey);
+  } else {
+    startScan_();
+  }
+});
+
+el.fallbackLink.addEventListener('click', function () {
+  if (checkedEntrantIds_().length === 0) {
+    alert('先に入場者を選んでください。');
+    return;
+  }
+  showFallbackQr_('');
+});
+
+document.getElementById('scanCancel').addEventListener('click', stopScan_);
+
+function startScan_() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof jsQR !== 'function') {
+    showFallbackQr_('camera');
+    return;
+  }
+  busy = true;
+  scanMsg.textContent = SCAN_HINT;
+  scanOverlay.style.display = 'flex';
+
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: false
+  }).then(function (stream) {
+    scanStream = stream;
+    scanVideo.srcObject = stream;
+    return scanVideo.play();
+  }).then(function () {
+    scanning = true;
+    scanLoop_();
+  }).catch(function () {
+    stopScan_();
+    showFallbackQr_('camera');
+  });
+}
+
+function scanLoop_() {
+  if (!scanning) return;
+  const vw = scanVideo.videoWidth, vh = scanVideo.videoHeight;
+  if (vw && vh) {
+    const scale = Math.min(1, 640 / Math.max(vw, vh));
+    const w = Math.round(vw * scale), h = Math.round(vh * scale);
+    const canvas = scanLoop_.canvas || (scanLoop_.canvas = document.createElement('canvas'));
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(scanVideo, 0, 0, w, h);
+    const code = jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'dontInvert' });
+    if (code && code.data) {
+      const key = parseStoreKey_(code.data);
+      if (key) {
+        stopScan_();
+        runCheckin_(key);
+        return;
+      }
+      scanMsg.textContent = 'チェックイン用のQRではありません。レジ横のQRを読み取ってください';
+      clearTimeout(scanLoop_.hintTimer);
+      scanLoop_.hintTimer = setTimeout(function () { scanMsg.textContent = SCAN_HINT; }, 2500);
+    }
+  }
+  scanTimer = setTimeout(scanLoop_, 120);
+}
+
+// チェックインQRの中身は「…/checkin.html?s=店舗用の合言葉」のURL
+function parseStoreKey_(text) {
+  try {
+    const u = new URL(text);
+    const key = u.searchParams.get('s');
+    if (key && /checkin\.html$/.test(u.pathname)) return key;
+  } catch (e) {}
+  return null;
+}
+
+function stopScan_() {
+  scanning = false;
+  clearTimeout(scanTimer);
+  if (scanStream) {
+    scanStream.getTracks().forEach(function (t) { t.stop(); });
+    scanStream = null;
+  }
+  scanVideo.srcObject = null;
+  scanOverlay.style.display = 'none';
+  busy = false;
+}
+
+function getPosition_() {
+  return new Promise(function (resolve, reject) {
+    if (!navigator.geolocation) { reject(new Error('unsupported')); return; }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true, timeout: 10000, maximumAge: 30000
+    });
+  });
+}
+
+function runCheckin_(storeKey) {
   const ids = checkedEntrantIds_();
   if (ids.length === 0) return;
+  busy = true;
+  document.getElementById('busyText').textContent = '位置を確認しています…';
+  busyOverlay.style.display = 'flex';
+
+  getPosition_().then(function (pos) {
+    return { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+  }, function () {
+    return null; // 位置が取れなかった
+  }).then(function (loc) {
+    if (!loc) return { status: 'location_unavailable' };
+    document.getElementById('busyText').textContent = 'チェックインしています…';
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'checkin',
+        payload: { storeKey: storeKey, personIds: ids, lat: loc.lat, lng: loc.lng, accuracy: loc.accuracy }
+      })
+    }).then(function (res) { return res.json(); }).then(function (data) {
+      if (!data.ok) throw new Error(data.error || 'チェックインに失敗しました。');
+      return data.result;
+    });
+  }).then(function (result) {
+    busyOverlay.style.display = 'none';
+    busy = false;
+    if (result.status === 'ok') {
+      showDone_(result);
+    } else if (result.status === 'too_far') {
+      showFallbackQr_('far');
+    } else {
+      showFallbackQr_('location');
+    }
+  }).catch(function (err) {
+    busyOverlay.style.display = 'none';
+    busy = false;
+    alert(err.message || 'チェックインに失敗しました。通信状況をご確認ください。');
+  });
+}
+
+// ---------- チェックイン完了画面 ----------
+function showDone_(result) {
+  const pick = DONE_IMAGES[Math.floor(Math.random() * DONE_IMAGES.length)];
+  const img = document.getElementById('doneImg');
+  img.src = pick.src;
+  img.style.width = pick.width + 'px';
+
+  document.getElementById('doneDate').textContent = result.dateText || '';
+  document.getElementById('doneTotal').textContent = result.total + '名';
+
+  const cats = document.getElementById('doneCats');
+  cats.innerHTML = '';
+  Object.keys(result.byCategory).forEach(function (cat) {
+    const row = document.createElement('div');
+    row.textContent = cat + ' ' + result.byCategory[cat].count + '名';
+    cats.appendChild(row);
+  });
+
+  const firstTimers = result.members.filter(function (m) { return m.isFirstVisit; });
+  const firstBox = document.getElementById('doneFirst');
+  if (firstTimers.length > 0) {
+    firstBox.textContent = '初めての方がいます（' + firstTimers.length + '名）。受付で登録料（お一人500円）をお支払いください。';
+    firstBox.style.display = 'block';
+  } else {
+    firstBox.style.display = 'none';
+  }
+
+  const list = document.getElementById('doneList');
+  list.innerHTML = '';
+  result.members.forEach(function (m) {
+    const li = document.createElement('li');
+    const left = document.createElement('span');
+    left.textContent = m.name;
+    if (m.isFirstVisit) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = '初めて';
+      left.appendChild(tag);
+    }
+    const right = document.createElement('span');
+    right.textContent = m.category;
+    li.appendChild(left);
+    li.appendChild(right);
+    list.appendChild(li);
+  });
+
+  const dups = result.members.filter(function (m) { return m.duplicate; });
+  const dupBox = document.getElementById('doneDup');
+  if (dups.length > 0) {
+    dupBox.textContent = '本日すでにチェックイン済みの方（来店回数は増えません）：' + dups.map(function (m) { return m.name; }).join('、');
+    dupBox.style.display = 'block';
+  } else {
+    dupBox.style.display = 'none';
+  }
+
+  el.meVisitCount.textContent = Number(el.meVisitCount.textContent || 0) +
+    (result.members.some(function (m) { return m.personId === me.personId && !m.duplicate; }) ? 1 : 0);
+
+  pendingStoreKey = '';
+  el.scanBtn.textContent = '📷 チェックインQRを読み取る';
+  document.getElementById('pendingNote').style.display = 'none';
+
+  doneOverlay.style.display = 'block';
+  doneOverlay.scrollTop = 0;
+}
+
+document.getElementById('doneClose').addEventListener('click', function () {
+  doneOverlay.style.display = 'none';
+});
+
+// ---------- スタッフに読み取ってもらう（予備）----------
+const REASONS = {
+  camera: 'カメラを起動できませんでした。この画面をスタッフにお見せください。（スマホ標準のカメラアプリでレジ横のQRを読み取る方法もあります）',
+  location: '位置情報を確認できませんでした。この画面をスタッフにお見せください。',
+  far: 'お店から離れた場所と判定されました。ご来店中の場合は、この画面をスタッフにお見せください。',
+  '': ''
+};
+
+function showFallbackQr_(reason) {
+  const ids = checkedEntrantIds_();
+  if (ids.length === 0) return;
+
+  document.getElementById('qrReason').textContent = REASONS[reason] || '';
 
   el.qrArea.innerHTML = '';
   new QRCode(el.qrArea, {
@@ -530,7 +872,7 @@ document.getElementById('issueBtn').addEventListener('click', function () {
 
   el.qrBox.style.display = 'block';
   el.qrBox.scrollIntoView({ behavior: 'smooth' });
-});
+}
 
 document.getElementById('editAgainBtn').addEventListener('click', function () {
   el.qrBox.style.display = 'none';

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>チェックインQR（印刷用）</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  :root{ --ink:#182848; --ink-soft:#2b3b63; --coral:#FF6A55; --teal:#2CB6AD; --marigold:#FFC24B; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:#EAF4FB; font-family:"Noto Sans JP", sans-serif; color:var(--ink); text-align:center;}
+  .sheet{max-width:560px; margin:0 auto; background:#fff; padding:28px 28px 36px;}
+  .sheet img.logo{height:70px; width:auto; display:block; margin:0 auto 14px;}
+  h1{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:2rem; margin:6px 0 4px;}
+  .lead{font-size:1.05rem; font-weight:700; color:var(--ink-soft); margin:0 0 18px;}
+  #qr{display:inline-block; padding:14px; border:6px solid var(--marigold); border-radius:20px;}
+  #qr img, #qr canvas{display:block;}
+  .steps{text-align:left; display:inline-block; margin:22px auto 0; font-size:1.05rem; line-height:2; font-weight:700;}
+  .steps small{display:block; font-weight:400; font-size:0.85rem; color:var(--ink-soft); line-height:1.7;}
+  .tools{max-width:560px; margin:14px auto; padding:0 16px;}
+  .tools button{padding:12px 28px; border-radius:12px; border:3px solid var(--ink); background:var(--marigold); font-weight:900; font-size:1rem; cursor:pointer;}
+  .warn{color:#E5503C; font-weight:700; margin:20px;}
+  @media print{ body{background:#fff;} .tools{display:none;} .sheet{max-width:none;} }
+</style>
+</head>
+<body>
+
+<div class="tools"><button onclick="window.print()">このページを印刷する</button></div>
+
+<div class="sheet" id="sheet">
+  <img class="logo" src="assets/logo.jpg" alt="トランポリンパーク AIR TRICK（エアトリ）">
+  <h1>チェックインQR</h1>
+  <p class="lead">ご来店のたびに、スマホで読み取ってください</p>
+  <div id="qr"></div>
+  <div><div class="steps">
+    ① 会員のマイページを開く<br>
+    ② 今日遊ぶ人を選ぶ<br>
+    ③ 「チェックインQRを読み取る」を押して、このQRを写す<br>
+    ④ 表示された画面をスタッフにお見せください
+    <small>はじめての方は、先に会員登録をお願いします。</small>
+  </div></div>
+</div>
+
+<p class="warn" id="noKey" style="display:none;">URLに合言葉（?s=…）が付いていません。正しいURLからアクセスしてください。</p>
+
+<script>
+(function () {
+  var key = new URLSearchParams(window.location.search).get('s');
+  if (!key) {
+    document.getElementById('sheet').style.display = 'none';
+    document.getElementById('noKey').style.display = 'block';
+    return;
+  }
+  var url = new URL('checkin.html', window.location.href);
+  url.search = '?s=' + encodeURIComponent(key);
+  new QRCode(document.getElementById('qr'), {
+    text: url.toString(),
+    width: 340,
+    height: 340,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+})();
+</script>
+
+</body>
+</html>
