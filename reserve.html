@@ -48,6 +48,10 @@
   .btn.danger{background:var(--white); border-color:var(--coral-deep); box-shadow:3px 3px 0 var(--coral-deep); color:var(--coral-deep); font-size:0.88rem; padding:10px 12px; margin-top:0;}
   .link{display:block; text-align:center; margin-top:14px; font-size:0.84rem; font-weight:700; color:var(--ink-soft); background:none; border:none; text-decoration:underline; cursor:pointer; width:100%;}
 
+  .rule-box{background:#FFF8E1; border:2px solid var(--marigold); border-radius:14px; padding:12px 14px; margin-top:14px; font-size:0.8rem; line-height:1.8; color:#5b4310;}
+  .rule-box p{margin:0;}
+  .rule-box p + p{margin-top:6px;}
+  .rule-box b{font-weight:800; color:var(--ink);}
   .notice{border-radius:14px; padding:12px 14px; font-size:0.84rem; line-height:1.8; margin-top:14px;}
   .notice.warn{background:#FFF3CD; color:#633806;}
   .notice.err{background:#FFE5E0; color:#8a2a1a; display:none;}
@@ -71,7 +75,10 @@
   .chip{padding:7px 12px; border-radius:999px; border:2px solid var(--teal); background:var(--white); color:var(--teal-deep); font-size:0.8rem; font-weight:700; cursor:pointer; font-family:inherit;}
   .search{display:flex; gap:8px; margin-top:10px;}
   .search input{flex:1; min-width:0; padding:10px; border-radius:10px; border:2px solid #E7E3D9; font-size:0.9rem; font-family:inherit;}
-  .search button{flex:none; padding:10px 14px;}
+  .search .btn{width:auto; flex:none; padding:10px 14px; margin-top:0;}
+  .search{flex-wrap:wrap;}
+  .search input#sKana{flex:1 1 100%;}
+  .search input[type=date]{flex:1 1 0; width:auto; max-width:none !important;}
   .headcount{margin-top:14px; background:var(--ink); color:var(--white); border-radius:14px; padding:12px 16px; text-align:center; font-weight:800;}
   .headcount b{font-family:"M PLUS Rounded 1c", sans-serif; font-size:1.4rem; margin:0 2px;}
   .swap{display:none; margin-top:12px; background:var(--cloud); border-radius:12px; padding:10px 12px; font-size:0.84rem; line-height:1.7;}
@@ -144,13 +151,12 @@
       <h2>ご予約の確認・変更</h2>
       <div id="resList"></div>
       <button type="button" class="btn" id="newBtn">新しく予約する</button>
+      <div class="rule-slot"></div>
     </div>
     <div class="card">
       <h2>ご案内</h2>
       <ul class="rules" style="margin:0; padding-left:1.2em; font-size:0.78rem; color:var(--ink-soft); line-height:1.8;">
         <li class="phrase">お支払いは、ご来店時に現地でお願いします。</li>
-        <li class="phrase">新しく予約・人数を増やす場合は、開始の30分前までです。</li>
-        <li class="phrase">キャンセル・人数を減らす・時間の変更は、開始の2時間前までです。それ以降は、お電話（<span style="white-space:nowrap;">070-2036-4175</span>）でご連絡ください。</li>
         <li class="phrase">当日のキャンセルや無断でのご欠席が重なると、WEB予約を一時的にお休みいただくことがあります。</li>
       </ul>
     </div>
@@ -201,6 +207,7 @@
     <div class="card">
       <h2 id="slotDate"></h2>
       <div id="slotList"></div>
+      <div class="rule-slot"></div>
       <button type="button" class="link" id="slotBack">日にちを選びなおす</button>
     </div>
   </section>
@@ -211,6 +218,7 @@
     <div class="card">
       <table class="sum" id="sumTable"></table>
       <p class="note phrase" id="confirmNote"></p>
+      <div class="rule-slot"></div>
       <div class="notice err" id="errC"></div>
       <button type="button" class="btn" id="confirmBtn">この内容で予約する</button>
       <button type="button" class="link" id="confirmBack">もどる</button>
@@ -238,8 +246,11 @@ const SHOP_PHONE = '070-2036-4175';
 const $ = function (id) { return document.getElementById(id); };
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 
+// 見本表示（?demo=1）：架空のデータで画面の流れを試せる。サーバーには何も送らず、実際には予約されない
+const DEMO = new URLSearchParams(location.search).get('demo') === '1';
 let myId = new URLSearchParams(location.search).get('id') || '';
-try { if (!myId) myId = localStorage.getItem('airtrick_pid') || localStorage.getItem('airtrick_personId') || ''; } catch (e) {}
+try { if (!myId && !DEMO) myId = localStorage.getItem('airtrick_pid') || localStorage.getItem('airtrick_personId') || ''; } catch (e) {}
+if (DEMO) myId = 'DEMO';
 
 let me = null, pageData = null;
 let reservations = [], suspension = null;
@@ -249,17 +260,33 @@ let selected = [];              // 選ばれている personId
 let flow = null;                // { mode: 'new'|'time'|'people', cur, date, time }
 let viewMonth = null;           // { y, m }
 
+// ---------- 変更・キャンセルの期限の案内（各画面に同じ文言を出す）----------
+// 「/」は、改行してよい文節の区切り（読みやすい位置で折り返すための目印。画面には出ない）
+(function () {
+  const lines = [
+    ['<b>人数を増やす</b>場合は、', '開始の30分前まで', 'マイページから操作できます。'],
+    ['<b>キャンセル・時間の変更・</b>', '<b>人数を減らす</b>場合は、', '開始の2時間前まで', 'マイページから操作できます。'],
+    ['それ以降は、', 'お電話（<span style="white-space:nowrap;">070-2036-4175</span>）', 'でご連絡ください。']
+  ];
+  const html = lines.map(function (l) {
+    return '<p>' + l.map(function (s) { return '<span class="nb">' + s + '</span>'; }).join('') + '</p>';
+  }).join('');
+  document.querySelectorAll('.rule-slot').forEach(function (el) { el.className = 'rule-box'; el.innerHTML = html; });
+})();
+
 // ---------- 共通 ----------
 function show(id) {
   ['vLoading', 'vLogin', 'vList', 'vPeople', 'vDate', 'vSlot', 'vConfirm', 'vDone'].forEach(function (v) { $(v).style.display = v === id ? 'block' : 'none'; });
   window.scrollTo(0, 0);
 }
 function post(action, payload) {
+  if (DEMO) return demoPost(action, payload);
   return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, payload: payload }) })
     .then(function (r) { return r.json(); })
     .then(function (d) { if (!d.ok) throw new Error(d.error || '通信に失敗しました。'); return d.result; });
 }
 function get(query) {
+  if (DEMO) return demoGet(query);
   return fetch(API_URL + '?' + query).then(function (r) { return r.json(); })
     .then(function (d) { if (!d.ok) throw new Error(d.error || '通信に失敗しました。'); return d.result; });
 }
@@ -290,15 +317,87 @@ function setErr(id, msg) {
   b.style.display = 'block';
 }
 
+// ---------- 見本表示用（?demo=1）の架空データ ----------
+const DEMO_PEOPLE = {
+  ME: { name: '山田 太郎', category: '中学生以上' }, W: { name: '山田 花子', category: '中学生以上' },
+  K1: { name: '山田 一郎', category: '小学生' }, K2: { name: '山田 二郎', category: '未就学児' }
+};
+const demoRes = [];
+let demoSeq = 1;
+function demoLater(v) { return new Promise(function (res) { setTimeout(function () { res(v); }, 250); }); }
+function demoHeadcount(ids, swap) { let n = ids.length; if (swap && ids.filter(function (i) { return DEMO_PEOPLE[i] && DEMO_PEOPLE[i].category === '中学生以上'; }).length >= 2) n -= 1; return n; }
+function demoView(r) {
+  return { id: r.id, date: r.date, time: r.time, endTime: endTime(r.time), headcount: r.headcount, swap: r.swap, status: '予約中', canCancel: true, canAdd: true,
+    participants: r.ids.map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category }; }) };
+}
+function demoBooked(date, time, exceptId) {
+  const base = [0, 6, 14, 18, 3][(Number(date.slice(8, 10)) + Number(time.slice(0, 2))) % 5];
+  return base + demoRes.filter(function (r) { return r.date === date && r.time === time && r.id !== exceptId; }).reduce(function (s, r) { return s + r.headcount; }, 0);
+}
+function demoGet(query) {
+  const q = new URLSearchParams(query); const a = q.get('action');
+  if (a === 'getAvailability') {
+    const days = [];
+    for (let d = q.get('from'); d <= q.get('to'); d = addDays(d, 1)) {
+      const w = new Date(d + 'T12:00:00Z').getUTCDay();
+      const hours = w === 2 ? [] : w === 0 ? [10, 11, 12, 13, 14, 15, 16, 17] : w === 6 ? [12, 13, 14, 15] : [13, 14, 15];
+      days.push({ date: d, open: hours.length > 0, reason: hours.length ? '' : '定休日', slots: hours.map(function (h) {
+        const t = ('0' + h).slice(-2) + ':00'; const b = Math.min(18, demoBooked(d, t));
+        return { time: t, end: ('0' + h).slice(-2) + ':50', booked: b, remaining: 18 - b };
+      }) });
+    }
+    return demoLater({ serverNow: Date.now(), capacity: 18, windowDays: 90, bookLeadMin: 30, cancelLeadMin: 120, days: days });
+  }
+  if (a === 'searchPerson') return demoLater({ matches: [] });
+  const list = demoRes.map(demoView);
+  const info = { found: true, serverNow: Date.now(), reservations: list, suspension: { suspended: false }, shopPhone: SHOP_PHONE };
+  if (a === 'getReserveInfo') {
+    info.page = { found: true, person: { personId: 'ME', name: DEMO_PEOPLE.ME.name, category: DEMO_PEOPLE.ME.category }, companions: [],
+      groups: [{ groupId: 'g1', name: 'はじめてのグループ', members: Object.keys(DEMO_PEOPLE).map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category }; }) }] };
+  }
+  return demoLater(info);
+}
+function demoPost(action, p) {
+  if (action === 'createReservation') {
+    const head = demoHeadcount(p.personIds, p.swap);
+    if (demoBooked(p.date, p.time) + head > 18) return Promise.reject(new Error('定員を超えるためご予約できません。'));
+    const r = { id: 'D' + (demoSeq++), date: p.date, time: p.time, ids: p.personIds.slice(), swap: !!p.swap, headcount: head };
+    demoRes.push(r); return demoLater({ reservation: demoView(r) });
+  }
+  const cur = demoRes.filter(function (r) { return r.id === p.reservationId; })[0];
+  if (!cur) return Promise.reject(new Error('ご予約が見つかりませんでした。'));
+  if (action === 'cancelReservation') { demoRes.splice(demoRes.indexOf(cur), 1); return demoLater({ status: 'キャンセル' }); }
+  if (action === 'updateReservation') {
+    const head = demoHeadcount(p.personIds, p.swap);
+    if (demoBooked(p.date, p.time, cur.id) + head > 18) return Promise.reject(new Error('定員を超えるため変更できません。'));
+    cur.date = p.date; cur.time = p.time; cur.ids = p.personIds.slice(); cur.swap = !!p.swap; cur.headcount = head;
+    return demoLater({ reservation: demoView(cur) });
+  }
+  return Promise.reject(new Error('見本表示では利用できない操作です。'));
+}
+if (DEMO) {
+  const t = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  let d = addDays(t, 3);
+  while ([2].indexOf(new Date(d + 'T12:00:00Z').getUTCDay()) !== -1) d = addDays(d, 1);
+  demoRes.push({ id: 'D0', date: d, time: '14:00', ids: ['ME', 'K1', 'K2'], swap: false, headcount: 3 });
+  const bar = document.createElement('div');
+  bar.className = 'notice warn';
+  bar.style.cssText = 'position:sticky; top:62px; z-index:15; text-align:center; font-weight:800; margin:8px 0 0;';
+  bar.innerHTML = '<span class="nb">見本の表示です。</span><span class="nb">架空のデータで、</span><span class="nb">実際には予約されません。</span>';
+  document.querySelector('.page').insertBefore(bar, document.querySelector('.page').firstChild);
+}
+
 // ---------- 起動 ----------
 if (!myId) {
   show('vLogin');
 } else {
-  $('backLink').href = 'mypage.html?id=' + encodeURIComponent(myId);
-  $('doneMy').href = 'mypage.html?id=' + encodeURIComponent(myId);
+  $('backLink').href = DEMO ? 'index.html' : 'mypage.html?id=' + encodeURIComponent(myId);
+  if (DEMO) $('backLink').textContent = '← トップへ';
+  $('doneMy').href = DEMO ? 'index.html' : 'mypage.html?id=' + encodeURIComponent(myId);
+  if (DEMO) $('doneMy').textContent = 'トップページへ';
   get('action=getReserveInfo&id=' + encodeURIComponent(myId)).then(function (r) {
     if (!r.found) { $('loadingMsg').innerHTML = '会員情報が見つかりませんでした。<br><a href="login.html?next=reserve">ログイン画面</a>からやり直してください。'; return; }
-    try { localStorage.setItem('airtrick_pid', myId); } catch (e) {}
+    try { if (!DEMO) localStorage.setItem('airtrick_pid', myId); } catch (e) {}
     pageData = r.page; me = r.page.person;
     clockOffset = r.serverNow - Date.now();
     registerCandidates();
@@ -623,7 +722,8 @@ function gotoConfirm() {
   summaryInto($('sumTable'), flow.mode !== 'new');
   phrases($('confirmNote'), flow.mode === 'time'
     ? '時間の変更は、/キャンセルとしては数えません。'
-    : flow.mode === 'people' ? '人数を増やせるのは開始の30分前まで、/減らせるのは開始の2時間前までです。' : 'キャンセルは開始の2時間前まで、/マイページから行えます。');
+    : flow.mode === 'people' ? '人数を増やせるのは開始の30分前まで、/減らせるのは開始の2時間前までです。' : '');
+  $('confirmNote').style.display = flow.mode === 'new' ? 'none' : 'block';
   setErr('errC', '');
   $('confirmBtn').disabled = false;
   show('vConfirm');
@@ -648,8 +748,6 @@ $('confirmBtn').addEventListener('click', function () {
   });
 });
 
-// ログイン後に戻ってきた場合のため、IDを保存しておく
-try { if (myId) localStorage.setItem('airtrick_pid', myId); } catch (e) {}
 </script>
 <script src="assets/phrase.js"></script>
 </body>
