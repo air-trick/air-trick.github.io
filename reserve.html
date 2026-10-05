@@ -104,6 +104,33 @@
   .cal button:disabled .m{color:#9aa3b5;}
   .legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:12px; font-size:0.76rem; color:var(--ink-soft);}
 
+  /* 1週間ぶんの予約状況の表（右にスクロールすると、次の1週間） */
+  .wk-tabs{display:flex; gap:8px; margin-bottom:10px;}
+  .wk-tabs button{flex:1; padding:9px 4px; border-radius:12px; border:2px solid #E7E3D9; background:var(--white); font-family:inherit; font-weight:800; font-size:0.78rem; color:var(--ink); cursor:pointer; white-space:nowrap;}
+  .wk-tabs button.on{border-color:var(--ink); background:var(--ink); color:var(--white);}
+  .wk-wrap{overflow-x:auto; scroll-snap-type:x mandatory; scroll-padding-left:46px; -webkit-overflow-scrolling:touch; border:1px solid #EEE8DC; border-radius:12px;}
+  .wk-grid{display:grid; grid-template-columns:46px repeat(14, minmax(0, 1fr)); width:calc(200% - 46px);}
+  .wk-grid > div{border-right:1px solid #EEE8DC; border-bottom:1px solid #EEE8DC; min-height:46px; display:flex; align-items:center; justify-content:center; background:var(--white); padding:0;}
+  .wk-grid > .wk-t, .wk-grid > .wk-corner{position:sticky; left:0; z-index:2; background:var(--cloud); font-size:0.72rem; font-weight:800; border-right:2px solid #E0D9C9;}
+  .wk-grid > .wk-h{flex-direction:column; min-height:54px; gap:1px; background:var(--cloud); font-size:0.72rem; font-weight:800; line-height:1.25;}
+  .wk-grid > .wk-h .dt{font-size:0.8rem;}
+  .wk-grid > .wk-h.sat{color:#2a5db0;} .wk-grid > .wk-h.sun{color:var(--coral-deep);}
+  .wk-grid > .wk-h.off{background:#EFEFEA; color:#9aa3b5;}
+  .wk-grid > .wk-h.snap{scroll-snap-align:start;}
+  .wk-grid > .wk-h .rest{font-size:0.62rem; font-weight:900;}
+  .wk-grid > .gray{background:#F4F4F1;}
+  .wk-grid .wk-c{width:100%; height:100%; min-height:46px; border:none; background:none; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0; cursor:pointer; color:var(--ink); line-height:1.1;}
+  .wk-grid .wk-c .sym{font-size:1.25rem; font-weight:900;}
+  .wk-grid .wk-c .sm{font-size:0.6rem; font-weight:800;}
+  .wk-grid .wk-c.ok .sym{color:var(--teal-deep);}
+  .wk-grid .wk-c.few .sym{color:#C28A12;}
+  .wk-grid .wk-c:disabled{cursor:default; color:#b3bac8;}
+  .wk-grid .wk-c.cur{background:#E3F6F4; box-shadow:inset 0 0 0 2px var(--teal);}
+  .wk-grid .wk-c.cur:disabled .sym{color:var(--teal-deep);}
+  .wk-grid .dash{color:#c9cfda; font-size:0.9rem;}
+  @media (max-width:340px){ .wk-grid > .wk-h .dt{font-size:0.64rem;} .wk-grid > .wk-h{font-size:0.66rem;} .wk-tabs button{font-size:0.7rem;} }
+  .to-month{display:block; width:100%; margin-top:14px; padding:12px; border-radius:12px; border:2px solid var(--teal); background:var(--white); color:var(--teal-deep); font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.88rem; cursor:pointer;}
+
   /* 時間枠 */
   .slot{display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; margin-top:10px; padding:14px; border-radius:14px; border:2px solid #E7E3D9; background:var(--white); font-family:inherit; color:var(--ink); text-align:left; cursor:pointer;}
   .slot .t{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.05rem;}
@@ -145,7 +172,7 @@
   <!-- 予約の一覧 -->
   <section id="vList">
     <h1 class="title">WEB予約</h1>
-    <p class="sub"><span class="nb">1回50分・定員18名。</span><span class="nb">本日から90日先まで</span><span class="nb">ご予約いただけます。</span></p>
+    <p class="sub"><span class="nb">本日から90日先まで</span><span class="nb">ご予約いただけます。</span></p>
     <div class="notice warn" id="suspendedBox" style="display:none;"></div>
     <div class="card">
       <h2>ご予約の確認・変更</h2>
@@ -185,7 +212,24 @@
     </div>
   </section>
 
-  <!-- ステップ：日にち -->
+  <!-- ステップ：日時（1週間ぶんの表。右にスクロールすると次の1週間） -->
+  <section id="vWeek">
+    <h1 class="title" id="weekTitle">日時を選ぶ</h1>
+    <div class="steps" id="stepsW"></div>
+    <div class="step-label" id="stepLabelW"></div>
+    <div class="card" style="padding:14px 12px;">
+      <div class="wk-tabs"><button type="button" id="wk1"></button><button type="button" id="wk2"></button></div>
+      <div class="wk-wrap" id="wkWrap"><div class="wk-grid" id="wkGrid"></div></div>
+      <p class="note" style="text-align:center;"><span class="nb">表を右にスクロールすると、</span><span class="nb">次の1週間が見られます。</span></p>
+      <div class="legend"><span>◎ 空きあり</span><span>△ 残りわずか</span><span>× 満席・受付終了</span><span>- 枠なし</span></div>
+      <p class="note phrase" id="weekNote" style="margin-top:6px;"></p>
+      <button type="button" class="to-month" id="toMonth"><span class="nb">それ以降の日にちは、</span><span class="nb">月間カレンダーから選ぶ ›</span></button>
+      <button type="button" class="link" id="weekBack">もどる</button>
+    </div>
+    <div class="rule-slot"></div>
+  </section>
+
+  <!-- 月間カレンダー（2週間より先の日にち） -->
   <section id="vDate">
     <h1 class="title" id="dateTitle">日にちを選ぶ</h1>
     <div class="steps" id="stepsD"></div>
@@ -243,7 +287,21 @@
 // GAS ウェブアプリの /exec URL（Code.gs をデプロイし直しても、URLは変わらない）
 const API_URL = 'https://script.google.com/macros/s/AKfycbxGU-KunzSyHMgM4YL8rbKmU0nit10N-o8W7OtT3ncyLA8xu4pv355S-6BvPLBMRoBC/exec';
 const SHOP_PHONE = '070-2036-4175';
+const TEL_HREF = 'tel:' + SHOP_PHONE.replace(/-/g, '');
 const $ = function (id) { return document.getElementById(id); };
+// 文中の電話番号を、タップで発信できるリンクにする（番号の途中では改行しない）
+function telLink() {
+  const a = document.createElement('a');
+  a.href = TEL_HREF; a.textContent = SHOP_PHONE;
+  a.style.cssText = 'white-space:nowrap; font-weight:800; color:var(--teal-deep); text-decoration:underline;';
+  return a;
+}
+function appendWithPhone(el, text) {
+  String(text).split(/(\d{3}-\d{4}-\d{4})/).forEach(function (s, i) {
+    if (!s) return;
+    if (i % 2 === 1) el.appendChild(telLink()); else el.appendChild(document.createTextNode(s));
+  });
+}
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 
 // 見本表示（?demo=1）：架空のデータで画面の流れを試せる。サーバーには何も送らず、実際には予約されない
@@ -266,7 +324,7 @@ let viewMonth = null;           // { y, m }
   const lines = [
     ['<b>人数を増やす</b>場合は、', '開始の30分前まで', 'マイページから操作できます。'],
     ['<b>キャンセル・時間の変更・</b>', '<b>人数を減らす</b>場合は、', '開始の2時間前まで', 'マイページから操作できます。'],
-    ['それ以降は、', 'お電話（<span style="white-space:nowrap;">070-2036-4175</span>）', 'でご連絡ください。']
+    ['それ以降は、', 'お電話（<a href="tel:07020364175" style="white-space:nowrap; font-weight:800; color:var(--teal-deep); text-decoration:underline;">070-2036-4175</a>）', 'でご連絡ください。']
   ];
   const html = lines.map(function (l) {
     return '<p>' + l.map(function (s) { return '<span class="nb">' + s + '</span>'; }).join('') + '</p>';
@@ -276,7 +334,7 @@ let viewMonth = null;           // { y, m }
 
 // ---------- 共通 ----------
 function show(id) {
-  ['vLoading', 'vLogin', 'vList', 'vPeople', 'vDate', 'vSlot', 'vConfirm', 'vDone'].forEach(function (v) { $(v).style.display = v === id ? 'block' : 'none'; });
+  ['vLoading', 'vLogin', 'vList', 'vPeople', 'vWeek', 'vDate', 'vSlot', 'vConfirm', 'vDone'].forEach(function (v) { $(v).style.display = v === id ? 'block' : 'none'; });
   window.scrollTo(0, 0);
 }
 function post(action, payload) {
@@ -294,7 +352,7 @@ function phrases(el, text) {
   el.textContent = '';
   String(text).split('/').forEach(function (s) {
     if (!s) return;
-    const sp = document.createElement('span'); sp.className = 'nb'; sp.textContent = s; el.appendChild(sp);
+    const sp = document.createElement('span'); sp.className = 'nb'; appendWithPhone(sp, s); el.appendChild(sp);
   });
 }
 function nowMs() { return Date.now() + clockOffset; }
@@ -309,11 +367,7 @@ function setErr(id, msg) {
   const b = $(id);
   if (!msg) { b.style.display = 'none'; return; }
   b.textContent = '';
-  String(msg).split(/(\d{3}-\d{4}-\d{4})/).forEach(function (s, i) {
-    if (!s) return;
-    if (i % 2 === 1) { const sp = document.createElement('span'); sp.style.whiteSpace = 'nowrap'; sp.textContent = s; b.appendChild(sp); }
-    else b.appendChild(document.createTextNode(s));
-  });
+  appendWithPhone(b, msg);
   b.style.display = 'block';
 }
 
@@ -428,7 +482,7 @@ function showList() {
     box.style.display = 'block';
     box.textContent = '';
     ['当日のキャンセルや無断欠席が重なったため、', 'WEB予約を' + jp(suspension.until) + 'までお休みしています。', 'お手数ですが、', 'お電話（' + SHOP_PHONE + '）', 'でご予約ください。'].forEach(function (s) {
-      const sp = document.createElement('span'); sp.className = 'nb'; sp.textContent = s; box.appendChild(sp);
+      const sp = document.createElement('span'); sp.className = 'nb'; appendWithPhone(sp, s); box.appendChild(sp);
     });
     $('newBtn').disabled = true;
   } else { box.style.display = 'none'; $('newBtn').disabled = false; }
@@ -496,14 +550,14 @@ function startEdit(mode, r) {
   selected = r.participants.map(function (p) { return p.personId; });
   swapOn = !!r.swap;
   if (mode === 'people') renderPeople();
-  else { loadAvail().then(function () { gotoDate(); }).catch(failLoad); }
+  else { loadAvail().then(function () { gotoWeek(); }).catch(failLoad); }
 }
 function failLoad(err) { alert(err.message || '空き状況を読み込めませんでした。'); showList(); }
 
 // ---------- ステップ表示 ----------
 function stepsFor() {
-  if (flow.mode === 'new') return ['ご利用の方', '日にち', '時間', '確認'];
-  if (flow.mode === 'time') return ['日にち', '時間', '確認'];
+  if (flow.mode === 'new') return ['ご利用の方', '日時', '確認'];
+  if (flow.mode === 'time') return ['日時', '確認'];
   return ['ご利用の方', '確認'];
 }
 function drawSteps(elSteps, elLabel, name) {
@@ -585,7 +639,7 @@ $('peopleNext').addEventListener('click', function () {
   const n = headcount();
   if (selected.length === 0) { setErr('errP', 'ご利用になる方を選んでください。'); return; }
   if (flow.mode === 'new') {
-    loadAvail().then(function () { gotoDate(); }).catch(function (err) { setErr('errP', err.message || '空き状況を読み込めませんでした。'); });
+    loadAvail().then(function () { gotoWeek(); }).catch(function (err) { setErr('errP', err.message || '空き状況を読み込めませんでした。'); });
   } else if (flow.mode === 'people') {
     const cur = flow.cur;
     const sameSet = selected.slice().sort().join() === cur.participants.map(function (p) { return p.personId; }).sort().join() && swapOn === !!cur.swap;
@@ -626,15 +680,78 @@ function slotState(date, s) {
   const remain = remainingFor(date, s);
   if (startMs(date, s.time) - nowMs() < avail.bookLeadMin * 60000) return { ok: false, label: '受付終了', cls: '' };
   if (remain <= 0) return { ok: false, label: '×　満席', cls: '' };
-  if (remain < need) return { ok: false, label: '残り' + remain + '名（人数オーバー）', cls: '' };
-  if (remain <= 6) return { ok: true, label: '△　残り' + remain + '名', cls: 'few' };
-  return { ok: true, label: '◎　空きあり', cls: 'ok' };
+  if (remain < need) return { ok: false, label: '残り' + remain + '名（人数オーバー）', cls: '', remain: remain, over: true };
+  if (remain <= 6) return { ok: true, label: '△　残り' + remain + '名', cls: 'few', remain: remain };
+  return { ok: true, label: '◎　空きあり', cls: 'ok', remain: remain };
 }
+
+// ---------- 日時（1週間ぶんの表。右にスクロールすると次の1週間） ----------
+function gotoWeek() {
+  drawSteps($('stepsW'), $('stepLabelW'), '日時');
+  $('weekTitle').textContent = flow.mode === 'time' ? '変更後の日時を選ぶ' : '日時を選ぶ';
+  phrases($('weekNote'), 'ご利用人数は' + headcount() + '名です。/◎・△の日時をタップして選んでください。' + (flow.mode === 'time' ? '/緑の枠は、現在のご予約です。' : ''));
+  const grid = $('wkGrid'); grid.innerHTML = '';
+  const days = []; for (let i = 0; i < 14; i++) days.push(addDays(todayStr, i));
+  const times = {};
+  days.forEach(function (d) { if (availIndex[d]) availIndex[d].slots.forEach(function (s) { times[s.time] = true; }); });
+  const timeList = Object.keys(times).sort();
+
+  function cell(cls, html) { const c = document.createElement('div'); if (cls) c.className = cls; if (html !== undefined) c.innerHTML = html; grid.appendChild(c); return c; }
+  cell('wk-corner', '');
+  days.forEach(function (d, i) {
+    const info = availIndex[d]; const dt = new Date(d + 'T12:00:00Z'); const w = dt.getUTCDay();
+    const h = cell('wk-h' + (i % 7 === 0 ? ' snap' : '') + (w === 6 ? ' sat' : w === 0 ? ' sun' : '') + (info && !info.open ? ' off' : ''), '');
+    h.innerHTML = '<span class="dt">' + (dt.getUTCMonth() + 1) + '/' + dt.getUTCDate() + '</span><span>' + WD[w] + '</span>' + (info && !info.open ? '<span class="rest">休</span>' : '');
+  });
+  timeList.forEach(function (t) {
+    cell('wk-t', t);
+    days.forEach(function (d) {
+      const info = availIndex[d]; const s = info ? info.slots.filter(function (x) { return x.time === t; })[0] : null;
+      if (!info || !info.open) { cell('gray', ''); return; }
+      if (!s) { cell('', '<span class="dash">-</span>'); return; }
+      const st = slotState(d, s);
+      const c = cell('', ''); const b = document.createElement('button'); b.type = 'button';
+      const isCur = flow.cur && flow.cur.date === d && flow.cur.time === t;
+      b.className = 'wk-c' + (st.ok ? ' ' + st.cls : '') + (isCur ? ' cur' : '');
+      const label = jp(d) + ' ' + range(t) + ' ' + (st.ok ? st.label : '選べません');
+      b.setAttribute('aria-label', label);
+      if (st.ok) {
+        b.innerHTML = '<span class="sym">' + (st.cls === 'ok' ? '◎' : '△') + '</span>' + (st.cls === 'few' ? '<span class="sm">残' + st.remain + '</span>' : '');
+        b.addEventListener('click', function () { flow.date = d; flow.time = t; flow.from = 'week'; gotoConfirm(); });
+        if (isCur) b.disabled = true; // いまのご予約の枠は、選び直さない
+      } else {
+        b.disabled = true;
+        b.innerHTML = '<span class="sym">×</span>' + (st.over ? '<span class="sm">残' + st.remain + '</span>' : '');
+      }
+      c.appendChild(b);
+    });
+  });
+
+  const md = function (d) { return Number(d.slice(5, 7)) + '/' + Number(d.slice(8, 10)); };
+  $('wk1').textContent = '1週目 ' + md(days[0]) + '〜' + md(days[6]);
+  $('wk2').textContent = '2週目 ' + md(days[7]) + '〜' + md(days[13]);
+  show('vWeek');
+  $('wkWrap').scrollLeft = 0;
+  syncWeekTabs();
+}
+function weekWidth() { const w = $('wkWrap'); return Math.max(1, w.clientWidth - 46); }
+function syncWeekTabs() { const second = $('wkWrap').scrollLeft > weekWidth() / 2; $('wk1').classList.toggle('on', !second); $('wk2').classList.toggle('on', second); }
+// なめらかに動かす。動かない環境では、少し待って直接その位置へ移す
+function scrollWeek(left) {
+  const w = $('wkWrap');
+  w.scrollTo({ left: left, behavior: 'smooth' });
+  setTimeout(function () { if (Math.abs(w.scrollLeft - left) > 2) w.scrollLeft = left; syncWeekTabs(); }, 700);
+}
+$('wk1').addEventListener('click', function () { scrollWeek(0); });
+$('wk2').addEventListener('click', function () { scrollWeek(weekWidth()); });
+$('wkWrap').addEventListener('scroll', syncWeekTabs);
+$('toMonth').addEventListener('click', function () { gotoDate(); });
+$('weekBack').addEventListener('click', function () { if (flow.mode === 'new') renderPeople(); else showList(); });
 
 // ---------- 日にち（カレンダー） ----------
 function gotoDate() {
-  drawSteps($('stepsD'), $('stepLabelD'), '日にち');
-  $('dateTitle').textContent = flow.mode === 'time' ? '変更後の日にちを選ぶ' : '日にちを選ぶ';
+  drawSteps($('stepsD'), $('stepLabelD'), '日時');
+  $('dateTitle').textContent = '月間カレンダーから日にちを選ぶ';
   const base = flow.date && flow.mode === 'time' ? flow.date : todayStr;
   viewMonth = { y: Number(base.slice(0, 4)), m: Number(base.slice(5, 7)) };
   phrases($('dateNote'), 'ご利用人数は' + headcount() + '名です。/空きのある日だけ選べます。');
@@ -674,12 +791,12 @@ function drawCal() {
 }
 $('prevM').addEventListener('click', function () { viewMonth.m--; if (viewMonth.m < 1) { viewMonth.m = 12; viewMonth.y--; } drawCal(); });
 $('nextM').addEventListener('click', function () { viewMonth.m++; if (viewMonth.m > 12) { viewMonth.m = 1; viewMonth.y++; } drawCal(); });
-$('dateBack').addEventListener('click', function () { if (flow.mode === 'new') renderPeople(); else showList(); });
+$('dateBack').addEventListener('click', function () { gotoWeek(); });
 
 // ---------- 時間 ----------
 function pickDate(ds) {
   flow.date = ds;
-  drawSteps($('stepsS'), $('stepLabelS'), '時間');
+  drawSteps($('stepsS'), $('stepLabelS'), '日時');
   $('slotTitle').textContent = flow.mode === 'time' ? '変更後の時間を選ぶ' : '時間を選ぶ';
   $('slotDate').textContent = jp(ds) + '（ご利用 ' + headcount() + '名）';
   const list = $('slotList'); list.innerHTML = '';
@@ -689,7 +806,7 @@ function pickDate(ds) {
     const t = document.createElement('span'); t.className = 't'; t.textContent = range(s.time);
     const l = document.createElement('span'); l.className = 's'; l.textContent = st.label;
     b.appendChild(t); b.appendChild(l);
-    b.addEventListener('click', function () { flow.time = s.time; gotoConfirm(); });
+    b.addEventListener('click', function () { flow.time = s.time; flow.from = 'slot'; gotoConfirm(); });
     list.appendChild(b);
   });
   show('vSlot');
@@ -730,6 +847,7 @@ function gotoConfirm() {
 }
 $('confirmBack').addEventListener('click', function () {
   if (flow.mode === 'people') renderPeople();
+  else if (flow.from === 'week') gotoWeek();
   else pickDate(flow.date);
 });
 $('confirmBtn').addEventListener('click', function () {
