@@ -355,6 +355,10 @@ function render(r) {
   rb.appendChild(barRow('キャンセル', rv.cancelled, rMax, '#B4B2A9', rv.cancelled + '件'));
   rb.appendChild(barRow('当日キャンセル', rv.sameDayCancelled, rMax, '#FFC24B', rv.sameDayCancelled + '件'));
   rb.appendChild(barRow('無断欠席', rv.noShow, rMax, '#FF6A55', rv.noShow + '件'));
+  const xMax = Math.max(rv.ext30 || 0, rv.ext60 || 0, 1);
+  rb.appendChild(barRow('延長30分', rv.ext30 || 0, xMax, '#7a8cc0', (rv.ext30 || 0) + '件'));
+  rb.appendChild(barRow('延長60分', rv.ext60 || 0, xMax, '#4f63a8', (rv.ext60 || 0) + '件'));
+  rb.appendChild(barRow('延長する方', rv.extPeople || 0, Math.max(rv.extPeople || 0, 1), '#2CB6AD', (rv.extPeople || 0) + '名'));
 
   $('sMembers').textContent = '現在 ' + r.totalMembers + '名';
   setPhrases($('sinceNote'), r.firstRecordedDate

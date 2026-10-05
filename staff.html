@@ -220,6 +220,11 @@ function showGroupResult(result) {
   if (result.reservation) {
     html += '<div class="rline"><span class="first">WEB予約あり：</span>' + escapeHtml(result.reservation.time) + '〜' + escapeHtml(result.reservation.endTime) + '（' + result.reservation.headcount + '名）</div>';
   }
+  if (result.reservation && result.reservation.extension) {
+    const ex = result.reservation.extension;
+    html += '<div class="rline"><span class="first">延長' + ex.minutes + '分：</span>' +
+      ex.people.map(function (q) { return escapeHtml(q.name) + '（' + escapeHtml(q.category) + '）'; }).join('、') + '</div>';
+  }
   const dups = result.members.filter(function (m) { return m.duplicate; });
   if (dups.length > 0) {
     html += '<div class="rline"><span class="first">4時間以内に記録済み（来店回数は増えません）：</span>' +

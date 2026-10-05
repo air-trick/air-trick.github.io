@@ -226,6 +226,11 @@ function resRow(x) {
   const p = document.createElement('div'); p.className = 'ppl';
   p.textContent = (x.swap ? '（保護者は交代）' : '') + x.participants.map(function (q) { return q.name + '（' + q.category + '）'; }).join('、');
   d.appendChild(p);
+  if (x.extMin > 0) {
+    const e = document.createElement('div'); e.className = 'ppl'; e.style.color = 'var(--teal-deep)'; e.style.fontWeight = '800';
+    e.textContent = '延長' + x.extMin + '分（' + x.extHead + '名）：' + x.extParticipants.map(function (q) { return q.name + '（' + q.category + '）'; }).join('、');
+    d.appendChild(e);
+  }
   if (x.recentIssues >= 1) {
     const w = document.createElement('span'); w.className = 'warn'; w.textContent = '直近90日：当日キャンセル・無断欠席 ' + x.recentIssues + '回'; d.appendChild(w);
   }

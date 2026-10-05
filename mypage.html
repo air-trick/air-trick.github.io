@@ -469,7 +469,7 @@ function loadReserveCard_() {
         b.textContent = (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日(' + wd[d.getUTCDay()] + ')　' + r.time + '〜' + r.endTime;
         item.appendChild(b);
         item.appendChild(document.createElement('br'));
-        item.appendChild(document.createTextNode(r.headcount + '名'));
+        item.appendChild(document.createTextNode(r.headcount + '名' + (r.extMin > 0 ? '　延長' + r.extMin + '分あり' : '')));
         body.appendChild(item);
       });
       if (list.length > 3) {
@@ -869,7 +869,9 @@ function showDone_(result) {
 
   const resvBox = document.getElementById('doneResv');
   if (result.reservation) {
-    setPhrases_(resvBox, 'WEB予約を確認しました。/' + result.reservation.time + '〜' + result.reservation.endTime + '（' + result.reservation.headcount + '名）');
+    const ex = result.reservation.extension;
+    setPhrases_(resvBox, 'WEB予約を確認しました。/' + result.reservation.time + '〜' + result.reservation.endTime + '（' + result.reservation.headcount + '名）' +
+      (ex ? '/延長' + ex.minutes + '分：' + ex.people.map(function (q) { return q.name; }).join('、') : ''));
     resvBox.style.display = 'block';
   } else {
     resvBox.style.display = 'none';

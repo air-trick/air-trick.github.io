@@ -104,6 +104,15 @@
   .cal button:disabled .m{color:#9aa3b5;}
   .legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:12px; font-size:0.76rem; color:var(--ink-soft);}
 
+  /* 延長の選択 */
+  .ext-box{margin-top:16px; border:2px solid #E7E3D9; border-radius:14px; padding:14px;}
+  .ext-title{margin:0 0 10px; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.92rem;}
+  .ext-opts{display:flex; gap:8px;}
+  .ext-opts button{flex:1; padding:11px 4px; border-radius:12px; border:2px solid #E7E3D9; background:var(--white); font-family:inherit; font-weight:800; font-size:0.88rem; color:var(--ink); cursor:pointer; white-space:nowrap;}
+  .ext-opts button.on{border-color:var(--teal); background:#E3F6F4; color:var(--teal-deep);}
+  .ext-count{margin-top:8px; text-align:right; font-weight:800; font-size:0.86rem; color:var(--ink-soft);}
+  .ext-count b{font-family:"M PLUS Rounded 1c", sans-serif; font-size:1.1rem; color:var(--ink);}
+
   /* 1週間ぶんの予約状況の表（右にスクロールすると、次の1週間） */
   .wk-tabs{display:flex; gap:8px; margin-bottom:10px;}
   .wk-tabs button{flex:1; padding:9px 4px; border-radius:12px; border:2px solid #E7E3D9; background:var(--white); font-family:inherit; font-weight:800; font-size:0.78rem; color:var(--ink); cursor:pointer; white-space:nowrap;}
@@ -206,6 +215,21 @@
       <div class="note" id="sMsg"></div>
       <div class="swap" id="swapBox"><label><input type="checkbox" id="swapChk"><span class="phrase">保護者の方が交代でご利用になる（交代する大人2名を、1名として数えます）</span></label></div>
       <div class="headcount">ご利用人数 <b id="headcount">0</b> 名</div>
+
+      <div class="ext-box" id="extBox">
+        <h3 class="ext-title">延長（続けて遊ぶ場合）</h3>
+        <div class="ext-opts" id="extOpts">
+          <button type="button" data-m="0">延長なし</button>
+          <button type="button" data-m="30">30分</button>
+          <button type="button" data-m="60">60分</button>
+        </div>
+        <div id="extWho" style="display:none;">
+          <p class="hint" style="margin:12px 0 0;"><span class="nb">続けて遊ぶ方を選んでください。</span><span class="nb">（子どもだけ、でもOKです）</span></p>
+          <ul class="plist" id="extList"></ul>
+          <div class="ext-count">延長する方 <b id="extCount">0</b> 名</div>
+        </div>
+        <p class="note phrase" style="margin-top:10px;">延長する方の人数分、次の時間枠の定員も確保します。次の枠がない、または満席の時間は、延長つきでは予約できません。延長料金は、<a href="pricing.html" target="_blank" rel="noopener" style="color:var(--teal-deep); font-weight:700;">ご利用料金のページ</a>をご覧ください。</p>
+      </div>
       <div class="notice err" id="errP"></div>
       <button type="button" class="btn" id="peopleNext">次へ</button>
       <button type="button" class="link" id="peopleBack">もどる</button>
@@ -382,11 +406,23 @@ function demoLater(v) { return new Promise(function (res) { setTimeout(function 
 function demoHeadcount(ids, swap) { let n = ids.length; if (swap && ids.filter(function (i) { return DEMO_PEOPLE[i] && DEMO_PEOPLE[i].category === '中学生以上'; }).length >= 2) n -= 1; return n; }
 function demoView(r) {
   return { id: r.id, date: r.date, time: r.time, endTime: endTime(r.time), headcount: r.headcount, swap: r.swap, status: '予約中', canCancel: true, canAdd: true,
+    extMin: r.extMin || 0, extHead: r.extHead || 0,
+    extParticipants: (r.extIds || []).map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category }; }),
     participants: r.ids.map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category }; }) };
 }
 function demoBooked(date, time, exceptId) {
   const base = [0, 6, 14, 18, 3][(Number(date.slice(8, 10)) + Number(time.slice(0, 2))) % 5];
-  return base + demoRes.filter(function (r) { return r.date === date && r.time === time && r.id !== exceptId; }).reduce(function (s, r) { return s + r.headcount; }, 0);
+  return base + demoRes.filter(function (r) { return r.id !== exceptId; }).reduce(function (s, r) {
+    if (r.date !== date) return s;
+    if (r.time === time) s += r.headcount;
+    if (r.extMin > 0 && nextTime(r.time) === time) s += r.extHead || 0; // 延長ぶんは次の枠に数える
+    return s;
+  }, 0);
+}
+function demoExt(p, head) {
+  const ids = (p.extMinutes > 0 ? (p.extIds || []) : []).filter(function (i) { return p.personIds.indexOf(i) !== -1; });
+  const adults = ids.filter(function (i) { return DEMO_PEOPLE[i].category === '中学生以上'; }).length;
+  return { extMin: ids.length ? Number(p.extMinutes) : 0, extIds: ids, extHead: ids.length - (p.swap && adults >= 2 ? 1 : 0) };
 }
 function demoGet(query) {
   const q = new URLSearchParams(query); const a = q.get('action');
@@ -415,7 +451,16 @@ function demoPost(action, p) {
   if (action === 'createReservation') {
     const head = demoHeadcount(p.personIds, p.swap);
     if (demoBooked(p.date, p.time) + head > 18) return Promise.reject(new Error('定員を超えるためご予約できません。'));
-    const r = { id: 'D' + (demoSeq++), date: p.date, time: p.time, ids: p.personIds.slice(), swap: !!p.swap, headcount: head };
+    const e = demoExt(p, head);
+    if (e.extMin > 0) {
+      // 次の枠の有無と空き（見本なので、同じ計算を直接行う）
+      const w = new Date(p.date + 'T12:00:00Z').getUTCDay();
+      const hours = w === 2 ? [] : w === 0 ? [10, 11, 12, 13, 14, 15, 16, 17] : w === 6 ? [12, 13, 14, 15] : [13, 14, 15];
+      const nt = nextTime(p.time);
+      if (hours.map(function (h) { return ('0' + h).slice(-2) + ':00'; }).indexOf(nt) === -1) return Promise.reject(new Error('この時間は、次の時間枠がないため延長できません。'));
+      if (demoBooked(p.date, nt) + e.extHead > 18) return Promise.reject(new Error('延長に必要な次の時間の空きが足りません。'));
+    }
+    const r = { id: 'D' + (demoSeq++), date: p.date, time: p.time, ids: p.personIds.slice(), swap: !!p.swap, headcount: head, extMin: e.extMin, extIds: e.extIds, extHead: e.extHead };
     demoRes.push(r); return demoLater({ reservation: demoView(r) });
   }
   const cur = demoRes.filter(function (r) { return r.id === p.reservationId; })[0];
@@ -424,7 +469,16 @@ function demoPost(action, p) {
   if (action === 'updateReservation') {
     const head = demoHeadcount(p.personIds, p.swap);
     if (demoBooked(p.date, p.time, cur.id) + head > 18) return Promise.reject(new Error('定員を超えるため変更できません。'));
+    const e = demoExt(p, head);
+    if (e.extMin > 0) {
+      const w = new Date(p.date + 'T12:00:00Z').getUTCDay();
+      const hours = w === 2 ? [] : w === 0 ? [10, 11, 12, 13, 14, 15, 16, 17] : w === 6 ? [12, 13, 14, 15] : [13, 14, 15];
+      const nt = nextTime(p.time);
+      if (hours.map(function (h) { return ('0' + h).slice(-2) + ':00'; }).indexOf(nt) === -1) return Promise.reject(new Error('この時間は、次の時間枠がないため延長できません。'));
+      if (demoBooked(p.date, nt, cur.id) + e.extHead > 18) return Promise.reject(new Error('延長に必要な次の時間の空きが足りません。'));
+    }
     cur.date = p.date; cur.time = p.time; cur.ids = p.personIds.slice(); cur.swap = !!p.swap; cur.headcount = head;
+    cur.extMin = e.extMin; cur.extIds = e.extIds; cur.extHead = e.extHead;
     return demoLater({ reservation: demoView(cur) });
   }
   return Promise.reject(new Error('見本表示では利用できない操作です。'));
@@ -501,10 +555,20 @@ function showList() {
       const sp = document.createElement('span'); sp.className = 'nb'; sp.textContent = p.name + (i < r.participants.length - 1 ? '、' : ''); m.appendChild(sp);
     });
     c.appendChild(w); c.appendChild(m);
+    if (r.extMin > 0) {
+      const x = document.createElement('div'); x.className = 'meta';
+      const xh = document.createElement('span'); xh.className = 'nb'; xh.style.fontWeight = '800'; xh.style.color = 'var(--teal-deep)';
+      xh.textContent = '延長' + r.extMin + '分（' + r.extHead + '名）：';
+      x.appendChild(xh);
+      r.extParticipants.forEach(function (p, i) {
+        const sp = document.createElement('span'); sp.className = 'nb'; sp.textContent = p.name + (i < r.extParticipants.length - 1 ? '、' : ''); x.appendChild(sp);
+      });
+      c.appendChild(x);
+    }
 
     const acts = document.createElement('div'); acts.className = 'actions';
     const b1 = btn('時間を変更', 'sub-btn', function () { startEdit('time', r); });
-    const b2 = btn('人数を変更', 'sub-btn', function () { startEdit('people', r); });
+    const b2 = btn('人数・延長', 'sub-btn', function () { startEdit('people', r); });
     const b3 = btn('キャンセル', 'danger', function () { doCancel(r); });
     b1.disabled = !r.canCancel; b2.disabled = !r.canAdd; b3.disabled = !r.canCancel;
     acts.appendChild(b1); acts.appendChild(b2); acts.appendChild(b3);
@@ -543,12 +607,15 @@ function startNew() {
   flow = { mode: 'new', cur: null, date: '', time: '' };
   selected = [me.personId];
   swapOn = false;
+  extMin = 0; extSel = [];
   renderPeople();
 }
 function startEdit(mode, r) {
   flow = { mode: mode, cur: r, date: r.date, time: r.time };
   selected = r.participants.map(function (p) { return p.personId; });
   swapOn = !!r.swap;
+  extMin = r.extMin || 0;
+  extSel = (r.extParticipants || []).map(function (p) { return p.personId; });
   if (mode === 'people') renderPeople();
   else { loadAvail().then(function () { gotoWeek(); }).catch(failLoad); }
 }
@@ -569,7 +636,17 @@ function drawSteps(elSteps, elLabel, name) {
 
 // ---------- ご利用の方 ----------
 let swapOn = false;
+let extMin = 0;        // 延長（0＝なし／30／60）
+let extSel = [];       // 延長する方（予約した方のうちの一部でもよい）
 function isAdult(id) { return candidates[id] && candidates[id].category === '中学生以上'; }
+function nextTime(time) { const p = time.split(':'); const t = Number(p[0]) * 60 + Number(p[1]) + 60; return ('0' + Math.floor(t / 60)).slice(-2) + ':' + ('0' + (t % 60)).slice(-2); }
+// 延長する人数（保護者が交代する場合、延長する大人が2名以上なら1名として数える）
+function extHeadcount() {
+  if (extMin === 0) return 0;
+  const ids = extSel.filter(function (id) { return selected.indexOf(id) !== -1; });
+  return ids.length - (swapOn && ids.filter(isAdult).length >= 2 ? 1 : 0);
+}
+function extIdsNow() { return extMin === 0 ? [] : extSel.filter(function (id) { return selected.indexOf(id) !== -1; }); }
 function headcount() {
   let n = selected.length;
   const adults = selected.filter(isAdult).length;
@@ -578,7 +655,7 @@ function headcount() {
 }
 
 function renderPeople() {
-  $('peopleTitle').textContent = flow.mode === 'people' ? '人数・ご利用の方の変更' : 'ご利用になる方';
+  $('peopleTitle').textContent = flow.mode === 'people' ? '人数・延長の変更' : 'ご利用になる方';
   drawSteps($('stepsP'), $('stepLabelP'), 'ご利用の方');
   // グループのチップ
   const chips = $('groupChips'); chips.innerHTML = '';
@@ -618,8 +695,36 @@ function drawPeopleSummary() {
   if (adults < 2) swapOn = false;
   $('swapChk').checked = swapOn;
   $('headcount').textContent = headcount();
+  drawExt();
 }
 $('swapChk').addEventListener('change', function () { swapOn = $('swapChk').checked; drawPeopleSummary(); });
+
+// 延長の選択欄（延長なし／30分／60分、延長する方）
+function drawExt() {
+  extSel = extSel.filter(function (id) { return selected.indexOf(id) !== -1; });
+  document.querySelectorAll('#extOpts button').forEach(function (b) { b.classList.toggle('on', Number(b.dataset.m) === extMin); });
+  $('extWho').style.display = extMin > 0 ? 'block' : 'none';
+  if (extMin === 0) return;
+  const ul = $('extList'); ul.innerHTML = '';
+  selected.forEach(function (id) {
+    const li = document.createElement('li');
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = extSel.indexOf(id) !== -1;
+    cb.addEventListener('change', function () {
+      if (cb.checked) { if (extSel.indexOf(id) === -1) extSel.push(id); } else extSel = extSel.filter(function (x) { return x !== id; });
+      $('extCount').textContent = extHeadcount();
+    });
+    const n = document.createElement('span'); n.className = 'pn'; n.textContent = candidates[id].name;
+    const c = document.createElement('span'); c.className = 'pc'; c.textContent = candidates[id].category;
+    li.appendChild(cb); li.appendChild(n); li.appendChild(c); ul.appendChild(li);
+  });
+  $('extCount').textContent = extHeadcount();
+}
+$('extOpts').addEventListener('click', function (e) {
+  const b = e.target.closest('button'); if (!b) return;
+  extMin = Number(b.dataset.m);
+  if (extMin > 0 && extSel.length === 0) extSel = selected.slice(); // 最初は全員にチェック（子どもだけの場合は外す）
+  drawExt();
+});
 
 $('sBtn').addEventListener('click', function () {
   const kana = $('sKana').value.trim(), birth = $('sBirth').value;
@@ -638,17 +743,28 @@ $('peopleNext').addEventListener('click', function () {
   setErr('errP', '');
   const n = headcount();
   if (selected.length === 0) { setErr('errP', 'ご利用になる方を選んでください。'); return; }
+  if (extMin > 0 && extIdsNow().length === 0) { setErr('errP', '延長する方を選んでください。'); return; }
   if (flow.mode === 'new') {
     loadAvail().then(function () { gotoWeek(); }).catch(function (err) { setErr('errP', err.message || '空き状況を読み込めませんでした。'); });
   } else if (flow.mode === 'people') {
     const cur = flow.cur;
+    const eh = extHeadcount();
     const sameSet = selected.slice().sort().join() === cur.participants.map(function (p) { return p.personId; }).sort().join() && swapOn === !!cur.swap;
-    if (sameSet) { setErr('errP', '変更されている内容がありません。'); return; }
-    if (n < cur.headcount && !cur.canCancel) { setErr('errP', '人数を減らせるのは、開始の2時間前までです。お電話（' + SHOP_PHONE + '）でご連絡ください。'); return; }
+    const sameExt = extMin === (cur.extMin || 0) && extIdsNow().slice().sort().join() === (cur.extParticipants || []).map(function (p) { return p.personId; }).sort().join();
+    if (sameSet && sameExt) { setErr('errP', '変更されている内容がありません。'); return; }
+    const reduce = n < cur.headcount || eh < (cur.extHead || 0) || extMin < (cur.extMin || 0);
+    if (reduce && !cur.canCancel) { setErr('errP', '人数や延長を減らせるのは、開始の2時間前までです。お電話（' + SHOP_PHONE + '）でご連絡ください。'); return; }
+    if (!reduce && !cur.canAdd) { setErr('errP', '人数や延長の追加・変更は、開始の30分前までです。お電話（' + SHOP_PHONE + '）でご連絡ください。'); return; }
     loadAvail().then(function () {
       const slot = findSlot(cur.date, cur.time);
-      const remain = slot ? slot.remaining + cur.headcount : 0; // 自分の予約ぶんを戻して計算
+      const remain = slot ? Math.min(avail.capacity, slot.remaining + cur.headcount) : 0; // 自分の予約ぶんを戻して計算
       if (n > remain) { setErr('errP', '定員を超えるため変更できません（この時間の残りは' + remain + '名です）。'); return; }
+      if (extMin > 0) {
+        const nt = findSlot(cur.date, nextTime(cur.time));
+        if (!nt) { setErr('errP', 'この時間は、次の時間枠がないため延長できません。'); return; }
+        const nr = Math.min(avail.capacity, nt.remaining + (cur.extMin > 0 ? (cur.extHead || 0) : 0));
+        if (eh > nr) { setErr('errP', '延長に必要な次の時間（' + nt.time + '〜）の空きが足りません（残りは' + nr + '名です）。'); return; }
+      }
       flow.date = cur.date; flow.time = cur.time;
       gotoConfirm();
     }).catch(function (err) { setErr('errP', err.message || '空き状況を読み込めませんでした。'); });
@@ -673,6 +789,8 @@ function findSlot(date, time) {
 function remainingFor(date, s) {
   let r = s.remaining;
   if (flow && flow.cur && flow.cur.date === date && flow.cur.time === s.time) r += flow.cur.headcount;
+  // 変更中の予約が、延長でこの枠を使っている場合も戻して数える
+  if (flow && flow.cur && flow.cur.extMin > 0 && flow.cur.date === date && nextTime(flow.cur.time) === s.time) r += flow.cur.extHead || 0;
   return Math.min(r, avail.capacity);
 }
 function slotState(date, s) {
@@ -681,6 +799,14 @@ function slotState(date, s) {
   if (startMs(date, s.time) - nowMs() < avail.bookLeadMin * 60000) return { ok: false, label: '受付終了', cls: '' };
   if (remain <= 0) return { ok: false, label: '×　満席', cls: '' };
   if (remain < need) return { ok: false, label: '残り' + remain + '名（人数オーバー）', cls: '', remain: remain, over: true };
+  if (extMin > 0) {
+    // 延長ありのときは、次の時間枠にも空きが必要
+    const day = availIndex[date];
+    const nt = day ? day.slots.filter(function (x) { return x.time === nextTime(s.time); })[0] : null;
+    if (!nt) return { ok: false, label: '延長できません（次の枠がありません）', cls: '', ext: true };
+    const nr = remainingFor(date, nt);
+    if (nr < extHeadcount()) return { ok: false, label: '延長の枠が空いていません', cls: '', ext: true };
+  }
   if (remain <= 6) return { ok: true, label: '△　残り' + remain + '名', cls: 'few', remain: remain };
   return { ok: true, label: '◎　空きあり', cls: 'ok', remain: remain };
 }
@@ -689,7 +815,9 @@ function slotState(date, s) {
 function gotoWeek() {
   drawSteps($('stepsW'), $('stepLabelW'), '日時');
   $('weekTitle').textContent = flow.mode === 'time' ? '変更後の日時を選ぶ' : '日時を選ぶ';
-  phrases($('weekNote'), 'ご利用人数は' + headcount() + '名です。/◎・△の日時をタップして選んでください。' + (flow.mode === 'time' ? '/緑の枠は、現在のご予約です。' : ''));
+  phrases($('weekNote'), 'ご利用人数は' + headcount() + '名です。/◎・△の日時をタップして選んでください。' +
+    (extMin > 0 ? '/延長' + extMin + '分（' + extHeadcount() + '名）があるため、/次の時間枠にも空きのある日時だけ選べます。/（×の下に「延長」と出ている日時は、延長の枠が空いていません）' : '') +
+    (flow.mode === 'time' ? '/緑の枠は、現在のご予約です。' : ''));
   const grid = $('wkGrid'); grid.innerHTML = '';
   const days = []; for (let i = 0; i < 14; i++) days.push(addDays(todayStr, i));
   const times = {};
@@ -721,7 +849,7 @@ function gotoWeek() {
         if (isCur) b.disabled = true; // いまのご予約の枠は、選び直さない
       } else {
         b.disabled = true;
-        b.innerHTML = '<span class="sym">×</span>' + (st.over ? '<span class="sm">残' + st.remain + '</span>' : '');
+        b.innerHTML = '<span class="sym">×</span>' + (st.over ? '<span class="sm">残' + st.remain + '</span>' : st.ext ? '<span class="sm">延長</span>' : '');
       }
       c.appendChild(b);
     });
@@ -819,8 +947,14 @@ function row(th, td, was) {
   const h = document.createElement('th'); h.textContent = th;
   const d = document.createElement('td');
   if (was) { const w = document.createElement('span'); w.className = 'was'; w.textContent = was; d.appendChild(w); }
-  d.appendChild(document.createTextNode(td));
+  pieces(d, td);
   tr.appendChild(h); tr.appendChild(d); return tr;
+}
+// 「、」「全角スペース」「※」の位置でだけ改行できるように、文を区切って並べる（名前や時刻の途中では改行しない）
+function pieces(el, text) {
+  (String(text).match(/[^、　：（）]*[、　：]|（[^）]*）|[^、　：（）]+/g) || []).forEach(function (s) {
+    const sp = document.createElement('span'); sp.className = 'nb'; sp.textContent = s; el.appendChild(sp);
+  });
 }
 function names() { return selected.map(function (id) { return candidates[id].name; }).join('、'); }
 function summaryInto(table, withWas) {
@@ -830,6 +964,15 @@ function summaryInto(table, withWas) {
   table.appendChild(row('日時', when, withWas && cur && (cur.date !== flow.date || cur.time !== flow.time) ? jp(cur.date) + '　' + range(cur.time) : ''));
   const people = headcount() + '名' + (swapOn && headcount() !== selected.length ? '（保護者は交代）' : '') + '：' + names();
   table.appendChild(row('ご利用', people, withWas && cur && cur.headcount !== headcount() ? cur.headcount + '名' : ''));
+  const curExt = cur && cur.extMin > 0 ? '延長' + cur.extMin + '分（' + cur.extHead + '名）' : '延長なし';
+  if (extMin > 0) {
+    const eids = extIdsNow();
+    const extText = '延長' + extMin + '分（' + extHeadcount() + '名）：' + eids.map(function (id) { return candidates[id].name; }).join('、') +
+      '　※次の時間枠（' + range(nextTime(flow.time)) + '）を確保します';
+    table.appendChild(row('延長', extText, withWas && cur && curExt !== '延長' + extMin + '分（' + extHeadcount() + '名）' ? curExt : ''));
+  } else if (withWas && cur && cur.extMin > 0) {
+    table.appendChild(row('延長', '延長なし', curExt));
+  }
   table.appendChild(row('お支払い', 'ご来店時に現地で'));
 }
 function gotoConfirm() {
@@ -852,7 +995,7 @@ $('confirmBack').addEventListener('click', function () {
 });
 $('confirmBtn').addEventListener('click', function () {
   const b = $('confirmBtn'); b.disabled = true; setErr('errC', '');
-  const payload = { ownerId: myId, personIds: selected, swap: swapOn && headcount() !== selected.length, date: flow.date, time: flow.time };
+  const payload = { ownerId: myId, personIds: selected, swap: swapOn && headcount() !== selected.length, date: flow.date, time: flow.time, extMinutes: extMin, extIds: extIdsNow() };
   let action = 'createReservation';
   if (flow.mode !== 'new') { action = 'updateReservation'; payload.reservationId = flow.cur.id; }
   post(action, payload).then(function () {
