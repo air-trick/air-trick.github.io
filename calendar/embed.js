@@ -36,19 +36,12 @@
     var byKey = {};
     data.months.forEach(function (x) { byKey[x.ym] = x; });
 
-    // 今月・来月を優先。まだ画像がない月は、次に用意されている月を表示する
+    // 表示するのは今月・来月だけ（翌々月以降は出さない）
     var list = [];
     if (byKey[cur]) list.push({ label: "今月", item: byKey[cur] });
     if (byKey[nx]) list.push({ label: "来月", item: byKey[nx] });
-    if (!list.length) {
-      var future = data.months.filter(function (x) { return x.ym >= cur; }).slice(0, 2);
-      list = future.map(function (x) { return { label: "", item: x }; });
-    }
     if (!list.length) { box.innerHTML = ""; return; }
-    list.forEach(function (e) {
-      var m = Number(e.item.ym.slice(5)) + "月";
-      e.label = e.label ? e.label + "（" + m + "）" : m;
-    });
+    list.forEach(function (e) { e.label = e.label + "（" + Number(e.item.ym.slice(5)) + "月）"; });
 
     var tabs = document.createElement("div");
     tabs.className = "biz-cal-tabs";
