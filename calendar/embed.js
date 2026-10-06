@@ -15,7 +15,9 @@
     "font-weight:800;font-size:0.92rem;cursor:pointer;font-family:inherit;}" +
     ".biz-cal-tabs button[aria-selected='true']{background:#182848;color:#fff;}" +
     ".biz-cal-img{display:block;width:100%;height:auto;border-radius:12px;box-shadow:0 6px 18px rgba(24,40,72,.12);}" +
-    ".biz-cal-note{margin:8px 0 0;font-size:0.8rem;color:#5a6378;text-align:center;}";
+    ".biz-calendar .biz-cal-note{margin:8px 0 0;font-size:0.8rem;color:#5a6378;text-align:center;}" +
+    ".biz-calendar .biz-cal-caution{margin:6px 0 0;font-size:0.78rem;line-height:1.6;font-weight:700;color:#E5503C;text-align:center;}" +
+    ".biz-cal-caution span{display:inline-block;}";
   var style = document.createElement("style");
   style.textContent = css;
   document.head.appendChild(style);
@@ -62,6 +64,10 @@
     var note = document.createElement("p");
     note.className = "biz-cal-note";
     note.textContent = "画像をタップすると大きく表示されます";
+    var caution = document.createElement("p");
+    caution.className = "biz-cal-caution";
+    caution.innerHTML = "<span>※営業日・営業時間は、</span><span>予告なく変更する場合があります。</span>" +
+      "<span>最新情報は公式LINE・Instagramで</span><span>お知らせします。</span>";
 
     function show(i) {
       var it = list[i].item;
@@ -85,6 +91,7 @@
     if (list.length > 1) box.appendChild(tabs);
     box.appendChild(link);
     box.appendChild(note);
+    box.appendChild(caution);
     show(0);
   }
 
