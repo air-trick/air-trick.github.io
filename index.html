@@ -165,7 +165,7 @@
 
   /* 営業カレンダー・お知らせチラシ（横スクロール） */
   .board{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; max-width:900px; margin:0 auto;}
-  .board-col{background:var(--white); border-radius:20px; padding:18px 16px 14px; box-shadow:0 10px 24px rgba(24,40,72,0.08);}
+  .board-col{width:100%; max-width:520px; justify-self:center; background:var(--white); border-radius:20px; padding:18px 16px 14px; box-shadow:0 10px 24px rgba(24,40,72,0.08);}
   .board-col[hidden]{display:none;}
   .board-title{margin:0 0 12px; text-align:center; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.05rem; color:var(--ink);}
   .slider{position:relative;}
