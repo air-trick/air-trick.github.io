@@ -163,6 +163,27 @@
   footer .links a{color:rgba(255,255,255,0.8); font-weight:700;}
   footer .copy{font-size:0.74rem;}
 
+  /* 営業カレンダー・お知らせチラシ（横スクロール） */
+  .board{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; max-width:900px; margin:0 auto;}
+  .board-col{background:var(--white); border-radius:20px; padding:18px 16px 14px; box-shadow:0 10px 24px rgba(24,40,72,0.08);}
+  .board-col[hidden]{display:none;}
+  .board-title{margin:0 0 12px; text-align:center; font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.05rem; color:var(--ink);}
+  .slider{position:relative;}
+  .slider-track{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; border-radius:12px;
+    scrollbar-width:none; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;}
+  .slider-track::-webkit-scrollbar{display:none;}
+  .slider-track:focus-visible{outline:3px solid var(--teal); outline-offset:3px;}
+  .slide{flex:0 0 100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; background:#F3F0E8;}
+  .slide img{display:block; width:100%; height:100%; object-fit:contain;}
+  .slider-btn{position:absolute; top:calc(50% - 14px); transform:translateY(-50%); width:38px; height:38px; border-radius:50%;
+    border:none; background:rgba(24,40,72,0.78); color:var(--white); font-size:1.6rem; line-height:1; padding:0 0 3px; cursor:pointer;}
+  .slider-btn.prev{left:6px;} .slider-btn.next{right:6px;}
+  .slider-btn:disabled{opacity:0; pointer-events:none;}
+  .slider-dots{display:flex; justify-content:center; flex-wrap:wrap; gap:7px; margin-top:12px;}
+  .slider-dots button{width:9px; height:9px; padding:0; border:none; border-radius:50%; background:#C9CDD6; cursor:pointer;}
+  .slider-dots button[aria-current="true"]{background:var(--ink); transform:scale(1.25);}
+  .board-note{margin:8px 0 0; text-align:center; font-size:0.74rem; color:var(--ink-soft);}
+
   .reveal{opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease;}
   .reveal.is-visible{opacity:1; transform:translateY(0);}
 </style>
@@ -220,6 +241,22 @@
     <span><span class="nb">電話をかける</span><span class="nb">（070-2036-4175）</span></span>
   </a>
 </div>
+
+<!-- 営業カレンダー・お知らせチラシ（左右にスクロール） -->
+<section class="section" id="board">
+  <div class="board reveal">
+    <div class="board-col">
+      <h3 class="board-title">営業カレンダー</h3>
+      <div class="slider" id="calSlider"></div>
+      <p class="board-note">左右にスクロールで翌月以降も見られます</p>
+    </div>
+    <div class="board-col">
+      <h3 class="board-title">お知らせ・チラシ</h3>
+      <div class="slider" id="flyerSlider"></div>
+      <p class="board-note">画像をタップすると大きく表示されます</p>
+    </div>
+  </div>
+</section>
 
 <!-- 料金・営業案内 -->
 <section class="section" id="info">
@@ -456,5 +493,6 @@
 })();
 </script>
 
+<script src="assets/board.js" defer></script>
 </body>
 </html>
