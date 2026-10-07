@@ -59,14 +59,20 @@
     note.textContent = "画像をタップすると大きく表示されます";
     var caution = document.createElement("p");
     caution.className = "biz-cal-caution";
-    caution.innerHTML = "<span>※営業日・営業時間は、</span><span>予告なく変更する場合があります。</span>" +
-      "<span>最新情報は公式LINE・Instagramで</span><span>お知らせします。</span>";
+    // 注意書き・画像の名前は、埋め込む場所で data-caution / data-title を指定すれば差し替えられる
+    // （data-caution は「／」で区切ると、その位置でだけ改行する）
+    var cautionText = box.getAttribute("data-caution") ||
+      "※営業日・営業時間は、／予告なく変更する場合があります。／最新情報は公式LINE・Instagramで／お知らせします。";
+    caution.innerHTML = cautionText.split("／").map(function (t) {
+      return "<span>" + t.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }) + "</span>";
+    }).join("");
+    var title = box.getAttribute("data-title") || "営業カレンダー";
 
     function show(i) {
       var it = list[i].item;
       var src = BASE + it.file + "?v=" + it.v;
       img.src = src;
-      img.alt = it.ym.slice(0, 4) + "年" + Number(it.ym.slice(5)) + "月の営業カレンダー";
+      img.alt = it.ym.slice(0, 4) + "年" + Number(it.ym.slice(5)) + "月の" + title;
       link.href = src;
       Array.prototype.forEach.call(tabs.children, function (b, k) {
         b.setAttribute("aria-selected", k === i ? "true" : "false");
