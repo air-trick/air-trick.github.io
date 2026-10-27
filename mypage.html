@@ -208,6 +208,30 @@
     border-radius:999px; padding:8px 30px; font-size:0.88rem; font-weight:700; cursor:pointer;
   }
 
+
+  .swap-row{display:flex; align-items:flex-start; gap:10px; margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--cloud); font-size:0.84rem; font-weight:700; line-height:1.7; cursor:pointer;}
+  .swap-row input{width:20px; height:20px; flex:none; margin-top:2px;}
+  .confirm-overlay{background:rgba(24,40,72,0.82); align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto;}
+  .confirm-card{width:100%; max-width:400px; margin:auto; background:var(--white); border-radius:20px; padding:24px 20px; box-shadow:0 12px 30px rgba(0,0,0,0.25);}
+  .confirm-title{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.15rem; text-align:center; line-height:1.6;}
+  .confirm-body{margin-top:12px; font-size:0.92rem; line-height:1.9; text-align:center; font-weight:700;}
+  .confirm-body .big{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.35rem; color:var(--coral-deep);}
+  .confirm-warn{margin-top:12px; background:#FFF3CD; border:2px solid var(--marigold); color:#633806; border-radius:12px; padding:10px 14px; font-size:0.84rem; line-height:1.8; font-weight:700; text-align:left;}
+  .confirm-pay{margin-top:12px;}
+  .confirm-ok{display:block; width:100%; margin-top:18px; padding:14px; border-radius:14px; border:3px solid var(--ink); background:linear-gradient(135deg, var(--marigold), var(--coral)); box-shadow:4px 4px 0 var(--ink); color:var(--ink); font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1rem; cursor:pointer;}
+  .confirm-ng{display:block; margin:14px auto 0; background:none; border:2px solid var(--ink-soft); color:var(--ink-soft); border-radius:999px; padding:8px 30px; font-size:0.88rem; font-weight:700; cursor:pointer;}
+  .done-entry{margin-top:14px; background:#E3F6F4; border:2px solid var(--teal); color:#0d5f59; border-radius:12px; padding:10px 14px; font-size:0.92rem; font-weight:700; line-height:1.8; text-align:center;}
+  .done-entry .big{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.25rem; color:var(--ink);}
+  .done-entry.wait{background:#FFF3CD; border-color:var(--marigold); color:#633806;}
+  .done-pay{margin-top:16px; border-top:2px dashed #E7E3D9; padding-top:12px;}
+  .pay-title{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:0.95rem; text-align:center; color:var(--ink);}
+  .pay-line{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 2px; border-bottom:1px solid #F1EEE6; font-size:0.9rem;}
+  .pay-line .qty{font-family:"M PLUS Rounded 1c", sans-serif; font-weight:900; font-size:1.25rem; color:var(--coral-deep); white-space:nowrap;}
+  .pay-line .yen{font-size:0.8rem; color:var(--ink-soft);}
+  .pay-total{margin-top:8px; text-align:right; font-weight:900; font-size:1rem;}
+  .pay-sub{margin-top:12px; font-weight:800; font-size:0.86rem; color:var(--teal-deep);}
+  .pay-note{margin-top:8px; font-size:0.78rem; color:var(--ink-soft); line-height:1.7;}
+
   .qr-box{text-align:center; margin-top:14px;}
   .qr-box .qr-area{margin-top:10px;}
   .qr-box .qr-area svg, .qr-box .qr-area canvas, .qr-box .qr-area img{margin:0 auto;}
@@ -296,6 +320,7 @@
       <h2 style="margin-top:22px;">選ばれている人</h2>
       <ul class="entrant-list" id="entrantList"></ul>
       <div class="error" id="entrantError"></div>
+      <label class="swap-row" id="swapRow" style="display:none;"><input type="checkbox" id="swapBox"><span><span class="nb">大人が2人で</span><span class="nb">交代しながら遊ぶ</span><span class="nb">（交代料金がかかります）</span></span></label>
     </div>
 
     <div class="summary" id="summary">
@@ -333,6 +358,16 @@
   <button class="scan-cancel" id="scanCancel">やめる</button>
 </div>
 
+<div class="overlay confirm-overlay" id="confirmOverlay">
+  <div class="confirm-card">
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-body" id="confirmBody"></div>
+    <div class="confirm-pay" id="confirmPay"></div>
+    <button class="confirm-ok" id="confirmOk">この内容で受け付ける</button>
+    <button class="confirm-ng" id="confirmNg">やめる</button>
+  </div>
+</div>
+
 <div class="overlay busy-overlay" id="busyOverlay"><span id="busyText">位置を確認しています…</span></div>
 
 <div class="overlay done-overlay" id="doneOverlay">
@@ -345,8 +380,10 @@
       <div class="done-cats" id="doneCats"></div>
       <div class="done-first" id="doneFirst" style="display:none;"></div>
       <div class="done-dup" id="doneResv" style="display:none; background:#E3F6F4; color:#0d5f59; font-weight:700;"></div>
+      <div class="done-entry" id="doneEntry" style="display:none;"></div>
       <ul class="done-list" id="doneList"></ul>
       <div class="done-dup" id="doneDup" style="display:none;"></div>
+      <div class="done-pay" id="donePay" style="display:none;"></div>
       <div class="done-note">この画面をスタッフにご提示ください。</div>
       <button class="done-close" id="doneClose">閉じる</button>
     </div>
@@ -413,10 +450,10 @@ function init_(page) {
   me = page.person;
   groups = page.groups;
 
-  people[me.personId] = { name: me.name, category: me.category };
-  page.companions.forEach(function (p) { people[p.personId] = { name: p.name, category: p.category }; });
+  people[me.personId] = { name: me.name, category: me.category, detail: me.detail };
+  page.companions.forEach(function (p) { people[p.personId] = { name: p.name, category: p.category, detail: p.detail }; });
   groups.forEach(function (g) {
-    g.members.forEach(function (p) { people[p.personId] = { name: p.name, category: p.category }; });
+    g.members.forEach(function (p) { people[p.personId] = { name: p.name, category: p.category, detail: p.detail }; });
   });
 
   el.meName.textContent = me.name;
@@ -591,6 +628,12 @@ function renderSummary_() {
 
   el.scanBtn.disabled = ids.length === 0;
   el.fallbackLink.disabled = ids.length === 0;
+
+  // 大人（成人）が2名以上のときだけ「交代で遊ぶ」を選べる
+  const adults = ids.filter(function (pid) { return people[pid] && people[pid].detail === '大人'; }).length;
+  const swapRow = document.getElementById('swapRow');
+  swapRow.style.display = adults >= 2 ? 'flex' : 'none';
+  if (adults < 2) document.getElementById('swapBox').checked = false;
 }
 
 // ---------- 検索して追加 ----------
@@ -618,7 +661,7 @@ document.getElementById('searchBtn').addEventListener('click', function () {
         return;
       }
       data.matches.forEach(function (m) {
-        people[m.personId] = { name: m.name, category: m.category };
+        people[m.personId] = { name: m.name, category: m.category, detail: m.detail };
         const row = document.createElement('div');
         row.className = 'found-item';
         row.innerHTML = '<span>' + escapeHtml(m.name) + '（' + escapeHtml(m.category) + '）</span>';
@@ -667,7 +710,7 @@ document.getElementById('npSubmit').addEventListener('click', function () {
     .then(function (data) {
       if (!data.ok) throw new Error(data.error || '登録に失敗しました。');
       const personId = data.result.personId;
-      people[personId] = { name: name, category: data.result.category };
+      people[personId] = { name: name, category: data.result.category, detail: data.result.detail };
       addEntrant_(personId);
       renderEntrants_();
       el.newPersonForm.style.display = 'none';
@@ -798,26 +841,38 @@ function getPosition_() {
   });
 }
 
-function runCheckin_(storeKey) {
+let lastLoc_ = null;
+
+function runCheckin_(storeKey, accept) {
   const ids = checkedEntrantIds_();
   if (ids.length === 0) return;
   busy = true;
-  document.getElementById('busyText').textContent = '位置を確認しています…';
-  busyOverlay.style.display = 'flex';
+  const swap = document.getElementById('swapRow').style.display !== 'none' && document.getElementById('swapBox').checked;
 
-  getPosition_().then(function (pos) {
-    return { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
-  }, function () {
-    return null; // 位置が取れなかった
-  }).then(function (loc) {
+  let locPromise;
+  if (accept && lastLoc_) {
+    locPromise = Promise.resolve(lastLoc_);
+  } else {
+    document.getElementById('busyText').textContent = '位置を確認しています…';
+    busyOverlay.style.display = 'flex';
+    locPromise = getPosition_().then(function (pos) {
+      return { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+    }, function () {
+      return null; // 位置が取れなかった
+    });
+  }
+
+  locPromise.then(function (loc) {
     if (!loc) return { status: 'location_unavailable' };
+    lastLoc_ = loc;
+    busyOverlay.style.display = 'flex';
     document.getElementById('busyText').textContent = 'チェックインしています…';
     return fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         action: 'checkin',
-        payload: { storeKey: storeKey, personIds: ids, lat: loc.lat, lng: loc.lng, accuracy: loc.accuracy }
+        payload: { storeKey: storeKey, personIds: ids, swap: swap, accept: accept || undefined, lat: loc.lat, lng: loc.lng, accuracy: loc.accuracy }
       })
     }).then(function (res) { return res.json(); }).then(function (data) {
       if (!data.ok) throw new Error(data.error || 'チェックインに失敗しました。');
@@ -828,6 +883,10 @@ function runCheckin_(storeKey) {
     busy = false;
     if (result.status === 'ok') {
       showDone_(result);
+    } else if (result.status === 'confirm') {
+      showConfirm_(storeKey, result);
+    } else if (result.status === 'full' || result.status === 'closed') {
+      showBlocked_(result);
     } else if (result.status === 'too_far') {
       showFallbackQr_('far');
     } else {
@@ -838,6 +897,91 @@ function runCheckin_(storeKey) {
     busy = false;
     alert(err.message || 'チェックインに失敗しました。通信状況をご確認ください。');
   });
+}
+
+// ---------- 料金・入場時間の表示 ----------
+function yen_(n) { return '¥' + Number(n).toLocaleString('ja-JP'); }
+
+function payLinesHtml_(pr) {
+  if (!pr) return '';
+  if (!pr.ok) return '<div class="pay-note">' + escapeHtml(pr.error || '') + '<br>料金はスタッフがご案内します。</div>';
+  return pr.lines.map(function (l) {
+    return '<div class="pay-line"><span>' + escapeHtml(l.label) + '<br><span class="yen">' + yen_(l.unit) + '</span></span><span class="qty">×' + l.qty + '</span></div>';
+  }).join('');
+}
+
+// 料金の内訳（ご利用料金／延長／登録料／合計）。pricing は checkin の返り値の pricing
+function payHtml_(pricing, noExtNote) {
+  if (!pricing) return '';
+  let html = '<div class="pay-title">お会計の内訳（目安）</div>';
+  let total = 0;
+  if (pricing.main) {
+    html += '<div class="pay-sub">ご利用料金（50分）</div>' + payLinesHtml_(pricing.main);
+    if (pricing.main.ok) total += pricing.main.total;
+  }
+  if (pricing.extension) {
+    const ex = pricing.extension;
+    html += '<div class="pay-sub">延長' + ex.minutes + '分：' + escapeHtml(ex.people.map(function (q) { return q.name; }).join('、')) + '</div>' + payLinesHtml_(ex.pricing);
+    if (ex.pricing && ex.pricing.ok) total += ex.pricing.total;
+  }
+  const reg = pricing.registration;
+  if (reg && reg.count > 0) {
+    html += '<div class="pay-sub">初回の登録料</div><div class="pay-line"><span>登録料<br><span class="yen">' + yen_(reg.unit) + '</span></span><span class="qty">×' + reg.count + '</span></div>';
+    total += reg.total;
+  }
+  html += '<div class="pay-total">合計　' + yen_(total) + '</div>';
+  if (!pricing.hasExtension && !noExtNote) {
+    html += '<div class="pay-note">' + nbHtml_(['延長は', '定員オーバーの', '可能性があるので、', 'スタッフに', 'お尋ねください。']) + '</div>';
+  }
+  return html;
+}
+
+// 文節ごとに折り返すため、配列の各要素を .nb で包む
+function nbHtml_(parts) { return parts.map(function (t) { return '<span class="nb">' + t + '</span>'; }).join(''); }
+
+let confirmAction_ = null;
+const confirmOverlay = document.getElementById('confirmOverlay');
+function closeConfirm_() { confirmOverlay.style.display = 'none'; }
+document.getElementById('confirmOk').addEventListener('click', function () { if (confirmAction_) confirmAction_(); });
+document.getElementById('confirmNg').addEventListener('click', closeConfirm_);
+
+function showConfirm_(storeKey, result) {
+  const pr = result.proposal;
+  let title, body = '', warn = '';
+  if (result.changed) body += '<div style="color:var(--coral-deep);">' + nbHtml_(['混み具合が変わったため、', '時間を更新しました。']) + '</div>';
+  if (pr.waitMin > 0) {
+    title = nbHtml_(['ただいま満員のため、', 'お待ちいただきます']);
+    body += '<div class="big">' + pr.start + 'から入場</div>' +
+      '<div>' + nbHtml_(['待ち時間は<b>' + pr.waitMin + '分</b>です。']) + '<br>' + nbHtml_(['（' + pr.start + '〜' + pr.end + '）']) + '</div>' +
+      '<div style="margin-top:8px;">' + nbHtml_(['この内容で', '受付しても', 'よろしいですか？']) + '</div>';
+    warn = nbHtml_(['入場時間に遅れても、', '終了時間を延ばせない', '場合があります。']);
+    if (pr.truncated) warn += '<br>' + nbHtml_([pr.limit + 'には', '退場となります。']);
+  } else {
+    title = nbHtml_(['退場時刻の', 'ご確認']);
+    body += '<div class="big">' + pr.end + 'には退場</div>' +
+      '<div>' + nbHtml_(['入場は今すぐできます。', '（' + pr.start + '〜' + pr.end + '）']) + '</div>' +
+      '<div style="margin-top:8px;">' + nbHtml_([pr.end + 'には', '退場となりますが、', 'よろしいでしょうか？']) + '</div>';
+  }
+  document.getElementById('confirmTitle').innerHTML = title;
+  document.getElementById('confirmBody').innerHTML = body + (warn ? '<div class="confirm-warn">' + warn + '</div>' : '');
+  document.getElementById('confirmPay').innerHTML = payHtml_(result.pricing, true);
+  const ok = document.getElementById('confirmOk');
+  ok.style.display = 'block';
+  document.getElementById('confirmNg').textContent = 'やめる';
+  confirmAction_ = function () { closeConfirm_(); runCheckin_(storeKey, { start: pr.start }); };
+  confirmOverlay.style.display = 'flex';
+}
+
+function showBlocked_(result) {
+  document.getElementById('confirmTitle').textContent = result.status === 'closed' ? '受付できません' : '満員です';
+  const msgParts = (String(result.message || '').match(/[^、。]+[、。]?/g) || []).map(function (t) { return escapeHtml(t); });
+  document.getElementById('confirmBody').innerHTML = '<div style="font-weight:500;">' + nbHtml_(msgParts) + '</div>' +
+    '<div class="confirm-warn">' + nbHtml_(['来店回数は', '記録していません。']) + '</div>';
+  document.getElementById('confirmPay').innerHTML = '';
+  document.getElementById('confirmOk').style.display = 'none';
+  document.getElementById('confirmNg').textContent = '閉じる';
+  confirmAction_ = null;
+  confirmOverlay.style.display = 'flex';
 }
 
 // ---------- チェックイン完了画面 ----------
@@ -875,6 +1019,27 @@ function showDone_(result) {
     resvBox.style.display = 'block';
   } else {
     resvBox.style.display = 'none';
+  }
+
+  const entryBox = document.getElementById('doneEntry');
+  const en = result.entry;
+  if (en && en.kind === 'walkin') {
+    entryBox.className = 'done-entry' + (en.waitMin > 0 ? ' wait' : '');
+    entryBox.innerHTML = (en.waitMin > 0 ? '入場できる時間（お待ちください）' : '入場できます') +
+      '<br><span class="big">' + en.start + '〜' + en.end + '</span>' +
+      (en.waitMin > 0 ? '<br>待ち時間 ' + en.waitMin + '分' : '') +
+      (en.truncated ? '<br>' + nbHtml_([en.end + 'には', '退場となります']) : '');
+    entryBox.style.display = 'block';
+  } else {
+    entryBox.style.display = 'none';
+  }
+
+  const payBox = document.getElementById('donePay');
+  if (result.pricing) {
+    payBox.innerHTML = payHtml_(result.pricing);
+    payBox.style.display = 'block';
+  } else {
+    payBox.style.display = 'none';
   }
 
   const list = document.getElementById('doneList');

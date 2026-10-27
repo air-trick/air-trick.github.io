@@ -193,6 +193,7 @@
       <h2>ご案内</h2>
       <ul class="rules" style="margin:0; padding-left:1.2em; font-size:0.78rem; color:var(--ink-soft); line-height:1.8;">
         <li class="phrase">お支払いは、ご来店時に現地でお願いします。</li>
+        <li class="phrase">未就学児は、大人（成人）の同伴が必要です。</li>
         <li class="phrase">当日のキャンセルや無断でのご欠席が重なると、WEB予約を一時的にお休みいただくことがあります。</li>
       </ul>
     </div>
@@ -397,18 +398,18 @@ function setErr(id, msg) {
 
 // ---------- 見本表示用（?demo=1）の架空データ ----------
 const DEMO_PEOPLE = {
-  ME: { name: '山田 太郎', category: '中学生以上' }, W: { name: '山田 花子', category: '中学生以上' },
-  K1: { name: '山田 一郎', category: '小学生' }, K2: { name: '山田 二郎', category: '未就学児' }
+  ME: { name: '山田 太郎', category: '中学生以上', detail: '大人' }, W: { name: '山田 花子', category: '中学生以上', detail: '大人' },
+  K1: { name: '山田 一郎', category: '小学生', detail: '小学生' }, K2: { name: '山田 二郎', category: '未就学児', detail: '未就学児' }
 };
 const demoRes = [];
 let demoSeq = 1;
 function demoLater(v) { return new Promise(function (res) { setTimeout(function () { res(v); }, 250); }); }
-function demoHeadcount(ids, swap) { let n = ids.length; if (swap && ids.filter(function (i) { return DEMO_PEOPLE[i] && DEMO_PEOPLE[i].category === '中学生以上'; }).length >= 2) n -= 1; return n; }
+function demoHeadcount(ids, swap) { let n = ids.length; if (swap && ids.filter(function (i) { return DEMO_PEOPLE[i] && DEMO_PEOPLE[i].detail === '大人'; }).length >= 2) n -= 1; return n; }
 function demoView(r) {
   return { id: r.id, date: r.date, time: r.time, endTime: endTime(r.time), headcount: r.headcount, swap: r.swap, status: '予約中', canCancel: true, canAdd: true,
     extMin: r.extMin || 0, extHead: r.extHead || 0,
-    extParticipants: (r.extIds || []).map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category }; }),
-    participants: r.ids.map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category }; }) };
+    extParticipants: (r.extIds || []).map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category, detail: DEMO_PEOPLE[i].detail }; }),
+    participants: r.ids.map(function (i) { return { personId: i, name: DEMO_PEOPLE[i].name, category: DEMO_PEOPLE[i].category, detail: DEMO_PEOPLE[i].detail }; }) };
 }
 function demoBooked(date, time, exceptId) {
   const base = [0, 6, 14, 18, 3][(Number(date.slice(8, 10)) + Number(time.slice(0, 2))) % 5];
@@ -421,7 +422,7 @@ function demoBooked(date, time, exceptId) {
 }
 function demoExt(p, head) {
   const ids = (p.extMinutes > 0 ? (p.extIds || []) : []).filter(function (i) { return p.personIds.indexOf(i) !== -1; });
-  const adults = ids.filter(function (i) { return DEMO_PEOPLE[i].category === '中学生以上'; }).length;
+  const adults = ids.filter(function (i) { return DEMO_PEOPLE[i].detail === '大人'; }).length;
   return { extMin: ids.length ? Number(p.extMinutes) : 0, extIds: ids, extHead: ids.length - (p.swap && adults >= 2 ? 1 : 0) };
 }
 function demoGet(query) {
@@ -516,16 +517,16 @@ if (!myId) {
 }
 
 function registerCandidates() {
-  candidates[me.personId] = { name: me.name, category: me.category };
-  pageData.companions.forEach(function (p) { candidates[p.personId] = { name: p.name, category: p.category }; });
-  pageData.groups.forEach(function (g) { g.members.forEach(function (p) { candidates[p.personId] = { name: p.name, category: p.category }; }); });
+  candidates[me.personId] = { name: me.name, category: me.category, detail: me.detail };
+  pageData.companions.forEach(function (p) { candidates[p.personId] = { name: p.name, category: p.category, detail: p.detail }; });
+  pageData.groups.forEach(function (g) { g.members.forEach(function (p) { candidates[p.personId] = { name: p.name, category: p.category, detail: p.detail }; }); });
 }
 
 function applyReservations(r) {
   reservations = r.reservations || [];
   suspension = r.suspension || { suspended: false };
   clockOffset = r.serverNow - Date.now();
-  reservations.forEach(function (x) { x.participants.forEach(function (p) { if (!candidates[p.personId]) candidates[p.personId] = { name: p.name, category: p.category }; }); });
+  reservations.forEach(function (x) { x.participants.forEach(function (p) { if (!candidates[p.personId]) candidates[p.personId] = { name: p.name, category: p.category, detail: p.detail }; }); });
 }
 
 // ---------- 一覧 ----------
@@ -638,7 +639,7 @@ function drawSteps(elSteps, elLabel, name) {
 let swapOn = false;
 let extMin = 0;        // 延長（0＝なし／30／60）
 let extSel = [];       // 延長する方（予約した方のうちの一部でもよい）
-function isAdult(id) { return candidates[id] && candidates[id].category === '中学生以上'; }
+function isAdult(id) { return candidates[id] && candidates[id].detail === '大人'; }
 function nextTime(time) { const p = time.split(':'); const t = Number(p[0]) * 60 + Number(p[1]) + 60; return ('0' + Math.floor(t / 60)).slice(-2) + ':' + ('0' + (t % 60)).slice(-2); }
 // 延長する人数（保護者が交代する場合、延長する大人が2名以上なら1名として数える）
 function extHeadcount() {
@@ -732,7 +733,7 @@ $('sBtn').addEventListener('click', function () {
   if (!kana || !birth) { msg.textContent = 'フリガナと生年月日を入力してください。'; return; }
   get('action=searchPerson&kana=' + encodeURIComponent(kana) + '&birthdate=' + encodeURIComponent(birth)).then(function (r) {
     if (r.matches.length === 0) { phrases(msg, '見つかりませんでした。/未登録の方は、/先にマイページで/登録・追加してください。'); return; }
-    r.matches.forEach(function (m) { candidates[m.personId] = { name: m.name, category: m.category }; if (selected.indexOf(m.personId) === -1) selected.push(m.personId); });
+    r.matches.forEach(function (m) { candidates[m.personId] = { name: m.name, category: m.category, detail: m.detail }; if (selected.indexOf(m.personId) === -1) selected.push(m.personId); });
     $('sKana').value = ''; $('sBirth').value = '';
     drawPeople();
   }).catch(function (err) { msg.textContent = err.message || '検索に失敗しました。'; });

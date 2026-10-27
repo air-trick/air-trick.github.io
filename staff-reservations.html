@@ -213,6 +213,37 @@ function draw(r) {
     list.forEach(function (x) { sec.appendChild(resRow(x)); });
     body.appendChild(sec);
   });
+
+  // 予約なしでご来店の方（入場した時刻から50分で数える）
+  const walks = r.walkins || [];
+  if (walks.length > 0) {
+    const sec = document.createElement('div'); sec.className = 'slot';
+    const h = document.createElement('div'); h.className = 'slot-h';
+    const tt = document.createElement('span'); tt.className = 't'; tt.textContent = '予約なしでご来店の方';
+    const cc = document.createElement('span'); cc.className = 'c'; cc.textContent = walks.length + '組・' + walks.reduce(function (s, w) { return s + w.head; }, 0) + '名';
+    h.appendChild(tt); h.appendChild(cc); sec.appendChild(h);
+    walks.forEach(function (w) {
+      const d = document.createElement('div'); d.className = 'res';
+      const top = document.createElement('div'); top.className = 'top';
+      const who = document.createElement('div'); who.className = 'who';
+      who.textContent = w.start + '〜' + w.end + '　' + w.head + '名';
+      top.appendChild(who);
+      if (w.waiting) { const b = document.createElement('span'); b.className = 'badge b-ok'; b.textContent = w.start + 'から入場（待機中）'; top.appendChild(b); }
+      d.appendChild(top);
+      const p = document.createElement('div'); p.className = 'ppl';
+      p.textContent = (w.swap ? '（保護者は交代）' : '') + w.participants.map(function (q) { return q.name + '（' + q.category + '）'; }).join('、');
+      d.appendChild(p);
+      const acts = document.createElement('div'); acts.className = 'acts';
+      acts.appendChild(act('入場を取り消す（帰られた場合）', 'red', function () {
+        if (confirm(w.start + '〜の入場（' + w.head + '名）を取り消して、定員の枠をあけます。\n\n来店回数は元に戻りません。よろしいですか？')) {
+          post('staffCancelWalkin', { walkinId: w.id }).then(load).catch(function (e) { msg('listErr', e.message); });
+        }
+      }));
+      d.appendChild(acts);
+      sec.appendChild(d);
+    });
+    body.appendChild(sec);
+  }
 }
 
 function resRow(x) {
