@@ -14,7 +14,7 @@ a{text-decoration:none;}
   box-shadow:0 2px 14px rgba(24,40,72,0.10);
 }
 .site-header .back{font-weight:800; font-size:0.85rem; color:var(--ink-soft);}
-.site-header img{display:block; height:44px; width:auto;}
+.site-header img{display:block; height:50px; width:auto;}
 
 .wrap{max-width:680px; margin:0 auto; padding:40px 20px 90px;}
 .wrap.wide{max-width:720px;}
