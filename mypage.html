@@ -275,6 +275,22 @@
   </div>
 
   <div id="content" style="display:none;">
+    <div class="card" id="testBox" style="display:none; border:3px dashed var(--coral-deep); background:#FFF4F1;">
+      <h2 style="margin-top:0;">スタッフ用テストモード</h2>
+      <p style="margin:0 0 10px; font-size:0.88rem; line-height:1.7;"><span class="nb"><b>ここでのチェックインは、</b></span><span class="nb"><b>どこにも記録されません</b></span><span class="nb">（来店回数・予約・定員は変わりません）。</span><span class="nb">QRと位置情報は不要です。</span></p>
+      <label style="display:block; font-size:0.82rem; font-weight:700; margin-top:6px;">仮の日時（空欄なら、いま）</label>
+      <input id="testAt" type="text" inputmode="numeric" placeholder="例：2026-11-08 14:30" style="width:100%; padding:10px; border:2px solid var(--ink); border-radius:10px; font-size:1rem;">
+      <label style="display:block; font-size:0.82rem; font-weight:700; margin-top:10px;">仮の先客（待ちや満員を試す）</label>
+      <div style="display:flex; gap:8px; align-items:center; font-size:0.9rem;">
+        <input id="testOccHead" type="number" min="0" max="60" inputmode="numeric" placeholder="人数" style="width:90px; padding:10px; border:2px solid var(--ink); border-radius:10px; font-size:1rem;">
+        <span>名が</span>
+        <input id="testOccEnd" type="text" inputmode="numeric" placeholder="例：14:30" style="width:100px; padding:10px; border:2px solid var(--ink); border-radius:10px; font-size:1rem;">
+        <span>まで</span>
+      </div>
+      <button class="small" id="testGo" style="width:100%; margin-top:12px;">QRなしでチェックインをテストする</button>
+      <button class="fallback-link" id="testEnd">テストモードを終了する</button>
+    </div>
+
     <div class="card">
       <div class="me-name" id="meName"></div>
       <div class="me-sub"><span class="badge" id="meCategory"></span>　通算来店回数：<span id="meVisitCount"></span>回</div>
@@ -843,14 +859,65 @@ function getPosition_() {
 
 let lastLoc_ = null;
 
+// ---------- スタッフ用テストモード（?test=スタッフの合言葉。何も記録しない） ----------
+let testKey_ = '';
+try {
+  const tp = new URLSearchParams(window.location.search).get('test');
+  if (tp === 'off') sessionStorage.removeItem('airtrick_test');
+  else if (tp) sessionStorage.setItem('airtrick_test', tp);
+  testKey_ = sessionStorage.getItem('airtrick_test') || '';
+} catch (e) {
+  const tq = new URLSearchParams(window.location.search).get('test') || '';
+  testKey_ = tq === 'off' ? '' : tq;
+}
+if (testKey_) document.getElementById('testBox').style.display = 'block';
+
+// 入力欄から、テスト用の指定を作る。入力が正しくないときは null
+function testOptions_() {
+  const at = document.getElementById('testAt').value.trim().replace(/[／/]/g, '-').replace(/\s+/g, ' ');
+  if (at && !/^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{2}$/.test(at)) {
+    alert('仮の日時は「2026-11-08 14:30」の形で入力してください。');
+    return null;
+  }
+  const o = { testMode: true, staffKey: testKey_ };
+  if (at) {
+    const p = at.split(' ')[0].split('-');
+    o.nowOverride = p[0] + '-' + ('0' + p[1]).slice(-2) + '-' + ('0' + p[2]).slice(-2) + ' ' + at.split(' ')[1];
+  }
+  const head = Number(document.getElementById('testOccHead').value);
+  const end = document.getElementById('testOccEnd').value.trim();
+  if (head > 0) {
+    if (!/^\d{1,2}:\d{2}$/.test(end)) {
+      alert('仮の先客がいる時刻は「14:30」の形で入力してください。');
+      return null;
+    }
+    o.testOcc = { head: head, end: end };
+  }
+  return o;
+}
+
+document.getElementById('testGo').addEventListener('click', function () {
+  if (busy) return;
+  if (checkedEntrantIds_().length === 0) { alert('先に入場者を選んでください。'); return; }
+  runCheckin_('test');
+});
+document.getElementById('testEnd').addEventListener('click', function () {
+  try { sessionStorage.removeItem('airtrick_test'); } catch (e) {}
+  window.location.href = 'mypage.html?test=off';
+});
+
 function runCheckin_(storeKey, accept) {
   const ids = checkedEntrantIds_();
   if (ids.length === 0) return;
+  const testOpt = testKey_ ? testOptions_() : null;
+  if (testKey_ && !testOpt) return;
   busy = true;
   const swap = document.getElementById('swapRow').style.display !== 'none' && document.getElementById('swapBox').checked;
 
   let locPromise;
-  if (accept && lastLoc_) {
+  if (testOpt) {
+    locPromise = Promise.resolve({ lat: 0, lng: 0, accuracy: 0 });
+  } else if (accept && lastLoc_) {
     locPromise = Promise.resolve(lastLoc_);
   } else {
     document.getElementById('busyText').textContent = '位置を確認しています…';
@@ -872,7 +939,7 @@ function runCheckin_(storeKey, accept) {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         action: 'checkin',
-        payload: { storeKey: storeKey, personIds: ids, swap: swap, accept: accept || undefined, lat: loc.lat, lng: loc.lng, accuracy: loc.accuracy }
+        payload: Object.assign({ storeKey: storeKey, personIds: ids, swap: swap, accept: accept || undefined, lat: loc.lat, lng: loc.lng, accuracy: loc.accuracy }, testOpt || {})
       })
     }).then(function (res) { return res.json(); }).then(function (data) {
       if (!data.ok) throw new Error(data.error || 'チェックインに失敗しました。');
@@ -948,6 +1015,7 @@ document.getElementById('confirmNg').addEventListener('click', closeConfirm_);
 function showConfirm_(storeKey, result) {
   const pr = result.proposal;
   let title, body = '', warn = '';
+  if (testKey_) body += '<div style="color:var(--coral-deep); font-weight:800;">【テスト】記録されません</div>';
   if (result.changed) body += '<div style="color:var(--coral-deep);">' + nbHtml_(['混み具合が変わったため、', '時間を更新しました。']) + '</div>';
   if (pr.waitMin > 0) {
     title = nbHtml_(['ただいま満員のため、', 'お待ちいただきます']);
@@ -991,6 +1059,7 @@ function showDone_(result) {
   img.src = pick.src;
   img.style.width = pick.width + 'px';
 
+  document.querySelector('#doneOverlay .done-head').textContent = result.test ? 'テスト（記録していません）' : 'チェックイン完了';
   document.getElementById('doneDate').textContent = result.dateText || '';
   document.getElementById('doneTotal').textContent = result.total + '名';
 
